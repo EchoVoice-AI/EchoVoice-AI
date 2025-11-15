@@ -75,7 +75,6 @@ This simulates the full end-to-end personalization flow:
 ```bash
 EchoVoice-AI/
 ├── README.md
-├── requirements.txt
 ├── package.json
 ├── .env.template
 │
@@ -86,6 +85,7 @@ EchoVoice-AI/
     ├── agents/        # segmentation, RAG, generation, safety, analytics
     ├── utils/         # logging, validation, configuration
     └── data/          # local mock content for retrieval
+    ├── requirements.txt 
 ```
 
 This scaffold includes **mock/minimal agent logic** so you can quickly validate orchestration before integrating full Azure services.
