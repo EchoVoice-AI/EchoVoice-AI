@@ -1,6 +1,10 @@
-# PersonalizeAI (EchoVoice-AI workspace)
+# EchoVoice: Customer Personalization Orchestrator 
 
-This repository contains a scaffold for "PersonalizeAI" — a Multi-Agent AI Personalization Platform (orchestrator + agents + frontend stub).
+**Project Title:** `EchoVoice: Customer Personalization Orchestrator`
+
+**Challenge Solved:** Compliant, on-brand personalization and A/B/n experimentation in a regulated domain.
+
+This repository contains a scaffold for "EchoVoice-AI" — a Multi-Agent AI Personalization Platform (orchestrator + agents + frontend stub).
 
 Quick start (backend):
 
@@ -8,6 +12,7 @@ Quick start (backend):
 2. Create a Python virtualenv and install dependencies:
 
 ```bash
+cd backend
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -18,15 +23,15 @@ pip install -r requirements.txt
 ```bash
 cd backend
 # Install dependencies first (see requirements.txt)
-uvicorn main:app --reload --host 127.0.0.1 --port 8000
+uvicorn main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-Then POST an event to `http://127.0.0.1:8000/orchestrate` with JSON payload to simulate the pipeline.
+Then POST an event to `http://localhost:8000/orchestrate` with JSON payload to simulate the pipeline.
 
 Repository layout (scaffold):
 
 ```
-PersonalizeAI/
+EchoVoice-AI/
 ├── README.md
 ├── requirements.txt
 ├── package.json
@@ -36,5 +41,12 @@ PersonalizeAI/
 └── backend/
 ```
 
-This is an initial scaffold with simple, mock implementations for each agent to help you prototype the orchestration flow.
-#Microsoft Innovation Challenge November 2025# AI-powered multi-agent system for safe, on-brand customer personalization with segmentation, content retrieval, message generation, and A/B/n experimentation.
+## Architecture
+
+This repo contains a small LangGraph-style Agent Team orchestration for local prototyping.
+
+- `agents/` — specialized agents (segmenter, retriever, generator, safety gate, delivery, analytics).
+- `data/` — local mock content for RAG and mock customer events.
+- `main.py` — FastAPI server and orchestrator glue.
+- `Dockerfile` — optional container for deployment.
+  
