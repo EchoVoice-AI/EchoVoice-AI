@@ -1,6 +1,9 @@
 """Simple orchestrator to run nodes in sequence."""
 from typing import List, Any
 from backend.app.nodes.base_node import BaseNode
+from backend.services.logger import get_logger
+
+logger = get_logger(__name__)
 
 class Orchestrator:
     """Orchestrator that manages and runs a list of nodes."""
@@ -16,5 +19,9 @@ class Orchestrator:
         """Run all nodes in sequence, passing output of each to the next."""
         data = input_data
         for node in self.nodes:
-            data = node.run(data)
+            try:
+                data = node.run(data)
+            except Exception as e:
+                logger.error(f"Error executing node '{node.name}': {type(e).__name__}: {str(e)}")
+                raise
         return data
