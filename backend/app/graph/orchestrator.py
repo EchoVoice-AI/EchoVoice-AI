@@ -1,7 +1,7 @@
 """Simple orchestrator to run nodes in sequence."""
 from typing import List, Any
-from backend.app.nodes.base_node import BaseNode
-from backend.services.logger import get_logger
+from app.nodes.base_node import BaseNode
+from services.logger import get_logger
 
 logger = get_logger(__name__)
 
