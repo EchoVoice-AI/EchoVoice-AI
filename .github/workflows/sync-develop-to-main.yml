@@ -19,17 +19,15 @@ jobs:
 
       - name: Create pull request (develop -> main)
         id: create_pr
-        uses: peter-evans/create-pull-request@v6
+        uses: repo-sync/pull-request@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "chore: sync develop -> main"
-          body: |
+          source_branch: develop
+          destination_branch: main
+          pr_title: "chore: sync develop -> main"
+          pr_body: |
             This PR is automatically created by CI to sync `develop` into `main`.
-          base: main
-          draft: false
-          branch: auto/sync-develop-main
-          labels: chore
-
+          pr_label: chore
+          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Enable auto-merge on PR
         if: steps.create_pr.outputs.pull-request-number != ''
         uses: actions/github-script@v7
