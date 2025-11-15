@@ -1,6 +1,6 @@
 """Simple orchestrator to run nodes in sequence."""
 from typing import List, Any
-from backend.nodes.base_node import BaseNode
+from backend.app.nodes.base_node import BaseNode
 
 class Orchestrator:
     """Orchestrator that manages and runs a list of nodes."""
