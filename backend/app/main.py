@@ -1,4 +1,6 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from .config import get_allowed_origins
 from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import uvicorn
@@ -12,7 +14,24 @@ from services.delivery import send_email_mock
 from services.logger import get_logger
 
 logger = get_logger('orchestrator')
-app = FastAPI(title='PersonalizeAI Orchestrator')
+app = FastAPI(title='EchoVoice-AI Orchestrator')
+
+# CORS middleware (configured via `backend.config`)
+origins = get_allowed_origins()
+
+# If running in production with no origins configured, be conservative.
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Placeholder router imports (uncomment / implement routers in future)
+# from .routers import health, items
+# app.include_router(health.router)
+# app.include_router(items.router)
 
 
 class CustomerModel(BaseModel):
