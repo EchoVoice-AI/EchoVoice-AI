@@ -1,0 +1,5 @@
+user_id,email,viewed_page,form_started,scheduled,attended
+U001,a@example.com,wage_garnishment,yes,no,no
+U002,b@example.com,payment_plans,no,no,no
+U003,c@example.com,offer_in_compromise,yes,no,no
+U004,d@example.com,tax_debt_relief,no,no,no
