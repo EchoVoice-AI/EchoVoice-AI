@@ -12,7 +12,7 @@ from services.delivery import send_email_mock
 from services.logger import get_logger
 
 logger = get_logger('orchestrator')
-app = FastAPI(title='PersonalizeAI Orchestrator')
+app = FastAPI(title='EchoVoice-AI Orchestrator')
 
 
 class CustomerModel(BaseModel):
