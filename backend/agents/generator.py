@@ -2,7 +2,11 @@ def generate_variants(customer: dict, segment: dict, citations: list) -> list:
     # Produce a few A/B variants using available info (mocked)
     name = customer.get('name', 'Customer')
     seg_label = segment.get('segment')
-    citation_text = citations[0]['content'] if citations else ''
+    # Citation shape may vary: some retrievers return 'content', others 'text' or 'redacted_text'.
+    citation_text = ''
+    if citations:
+        first = citations[0]
+        citation_text = first.get('content') or first.get('text') or first.get('redacted_text') or ''
 
     variants = []
     variants.append({
