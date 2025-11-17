@@ -12,6 +12,7 @@ from agents.safety_gate import safety_check_and_filter
 from agents.analytics import evaluate_variants
 from services.delivery import send_email_mock
 from services.logger import get_logger
+from .routers.health import router as health_router
 
 logger = get_logger('orchestrator')
 app = FastAPI(title='EchoVoice-AI Orchestrator')
@@ -28,10 +29,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Placeholder router imports (uncomment / implement routers in future)
-# from .routers import health, items
-# app.include_router(health.router)
-# app.include_router(items.router)
+# Register routers (standard `routers/` package)
+app.include_router(health_router)
 
 
 class CustomerModel(BaseModel):

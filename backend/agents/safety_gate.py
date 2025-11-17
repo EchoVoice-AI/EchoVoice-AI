@@ -1,4 +1,4 @@
-from ..app.config import LOG_LEVEL
+from app.config import LOG_LEVEL
 
 PROHIBITED_TERMS = ["cure", "guarantee of cure"]
 
