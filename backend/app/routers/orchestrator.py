@@ -1,15 +1,16 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
+from typing import AsyncGenerator
 
+from services.logger import get_logger
+from app.store import MemoryStore, store
+from app.graph import Orchestrator
 from ..nodes.segmenter_node import SegmenterNode
 from ..nodes.retriever_node import RetrieverNode
 from ..nodes.generator_node import GeneratorNode
 from ..nodes.safety_node import SafetyNode
 from ..nodes.analytics_node import AnalyticsNode
-from services.delivery import send_email_mock
-from services.logger import get_logger
-from app.store import MemoryStore, store
 
 router = APIRouter()
 logger = get_logger("orchestrator")
@@ -18,6 +19,57 @@ logger = get_logger("orchestrator")
 def get_store() -> MemoryStore:
     """FastAPI dependency returning the global memory store singleton."""
     return store
+
+
+def get_segmenter() -> SegmenterNode:
+    return SegmenterNode()
+
+
+def get_retriever() -> RetrieverNode:
+    return RetrieverNode()
+
+
+def get_generator() -> GeneratorNode:
+    return GeneratorNode()
+
+
+def get_safety() -> SafetyNode:
+    return SafetyNode()
+
+
+def get_analytics() -> AnalyticsNode:
+    return AnalyticsNode()
+
+
+async def get_orchestrator(
+    store: MemoryStore = Depends(get_store),
+    segmenter: SegmenterNode = Depends(get_segmenter),
+    retriever: RetrieverNode = Depends(get_retriever),
+    generator: GeneratorNode = Depends(get_generator),
+    safety: SafetyNode = Depends(get_safety),
+    analytics: AnalyticsNode = Depends(get_analytics),
+    ) -> AsyncGenerator[Orchestrator, None]:
+    """FastAPI dependency returning a per-request Orchestrator instance.
+
+    This constructs an Orchestrator per request using node instances
+    provided by DI so tests can override node providers individually.
+    """
+    orch = Orchestrator(
+        store_=store,
+        logger_=logger,
+        segmenter=segmenter,
+        retriever=retriever,
+        generator=generator,
+        safety=safety,
+        analytics=analytics,
+    )
+    try:
+        yield orch
+    finally:
+        try:
+            orch.close()
+        except Exception:
+            logger.exception("error closing orchestrator")
 
 
 class CustomerModel(BaseModel):
@@ -32,65 +84,13 @@ class OrchestrateRequest(BaseModel):
     customer: CustomerModel
 
 
-# Instantiate nodes (simple singletons for this router)
-segmenter = SegmenterNode()
-retriever = RetrieverNode()
-generator = GeneratorNode()
-safety = SafetyNode()
-analytics = AnalyticsNode()
-
-
 @router.post("/orchestrate")
-async def orchestrate(payload: OrchestrateRequest, store: MemoryStore = Depends(get_store)):
+async def orchestrate(payload: OrchestrateRequest, orchestrator: Orchestrator = Depends(get_orchestrator)):
     # Use Pydantic v2 model_dump for compatibility with newer versions
     customer = payload.customer.model_dump()
     if not customer:
         raise HTTPException(status_code=400, detail="customer missing")
 
-    # derive a small key for transient state (prefer id, fallback to email)
-    key_base = customer.get("id") or customer.get("email") or "anon"
-
-    # 1. Segmentation
-    segment = segmenter.run(customer)
-    logger.info(f"Segment: {segment}")
-    store.set(f"{key_base}:segment", segment)
-
-    # 2. Retrieval
-    citations = retriever.run(customer)
-    logger.info(f"Citations: {citations}")
-    store.set(f"{key_base}:citations", citations)
-
-    # 3. Generation
-    variants = generator.run({"customer": customer, "segment": segment, "citations": citations})
-    logger.info(f"Generated {len(variants) if variants else 0} variants")
-    store.set(f"{key_base}:variants", variants)
-
-    # 4. Safety checks
-    safety_result = safety.run(variants)
-    safe_count = len(safety_result.get("safe", [])) if isinstance(safety_result, dict) else 0
-    blocked_count = len(safety_result.get("blocked", [])) if isinstance(safety_result, dict) else 0
-    logger.info(f"Safety safe={safe_count} blocked={blocked_count}")
-
-    # 5. Analytics / choose winner
-    analysis = analytics.run({"variants": safety_result.get("safe", []), "customer": customer}) if isinstance(safety_result, dict) else None
-    winner = analysis.get("winner") if isinstance(analysis, dict) and analysis else None
-    store.set(f"{key_base}:analysis", analysis)
-    if winner:
-        store.set(f"{key_base}:winner", winner)
-
-    # 6. Delivery (mock)
-    delivery_result = None
-    if winner and isinstance(safety_result, dict):
-        variant = next((v for v in safety_result.get("safe", []) if v.get("id") == winner.get("variant_id")), None)
-        if variant:
-            delivery_result = send_email_mock(customer.get("email"), variant.get("subject"), variant.get("body"))
-
-    response = {
-        "segment": segment,
-        "citations": citations,
-        "variants": variants,
-        "safety": safety_result,
-        "analysis": analysis,
-        "delivery": delivery_result,
-    }
-    return response
+    # Delegate orchestration to the Orchestrator service
+    result = await orchestrator.run_flow("default_personalization", customer)
+    return result
