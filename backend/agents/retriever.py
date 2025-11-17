@@ -1,4 +1,4 @@
-from ..services.vector_db import simple_lookup_by_product_id
+from services.vector_db import simple_lookup_by_product_id
 
 def retrieve_citations(customer: dict) -> list:
     # Example: fetch the product doc for the product_id in customer properties
