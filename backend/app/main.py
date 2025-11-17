@@ -8,6 +8,8 @@ import uvicorn
 from services.logger import get_logger
 from .routers.health import router as health_router
 from .routers.orchestrator import router as orchestrator_router
+# Ensure tracer is instantiated at app startup (safe no-op if tracer missing)
+from .tracing import tracer  # noqa: F401
 
 logger = get_logger('orchestrator')
 app = FastAPI(title='EchoVoice-AI Orchestrator')

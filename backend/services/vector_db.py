@@ -24,6 +24,7 @@ from langchain_openai import AzureOpenAIEmbeddings
 from langchain_community.vectorstores import FAISS
 from langchain_core.documents import Document
 from langchain_community.embeddings import FakeEmbeddings
+from .github_embeddings import GitHubEmbeddings
 
 
 # Default JSONL path (can be overridden by callers)
@@ -43,6 +44,23 @@ def get_embedding_model():
     so the pipeline can run without real embeddings. Retrieval quality will be
     meaningless, but structure + wiring can be tested.
     """
+    # Priority: GitHub Models via azure.ai.inference -> Azure OpenAI -> FakeEmbeddings
+    github_token = os.getenv("GITHUB_TOKEN")
+    # Use an explicit env var for embedding model name to avoid confusion
+    # with any GitHub LLM model env var used elsewhere.
+    github_model = os.getenv("GITHUB_EMBEDDING_MODEL")
+    github_endpoint = os.getenv(
+        "GITHUB_EMBEDDINGS_ENDPOINT", "https://models.github.ai/inference"
+    )
+
+    if github_token and github_model:
+        try:
+            print("[vector_db] Using GitHub Models embeddings via azure.ai.inference")
+            return GitHubEmbeddings(endpoint=github_endpoint, token=github_token, model=github_model)
+        except Exception:
+            # Fall through to other providers on error
+            pass
+
     endpoint = os.getenv("AZURE_OPENAI_ENDPOINT")
     api_key = os.getenv("AZURE_OPENAI_API_KEY")
     api_version = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
@@ -114,6 +132,15 @@ def _build_vectorstore(jsonl_path: Optional[str] = None) -> FAISS:
 
     embeddings = get_embedding_model()
     vs = FAISS.from_documents(documents, embedding=embeddings)
+    # Ensure the vectorstore exposes a callable embedding function. Some
+    # versions of the FAISS wrapper expect `embedding_function` to be a
+    # callable; if we passed an embeddings object, make a small wrapper.
+    try:
+        if not callable(embeddings):
+            vs.embedding_function = lambda text: embeddings.embed_query(text)
+    except Exception:
+        # Best-effort: if this fails, leave the default behavior.
+        pass
     return vs
 
 
