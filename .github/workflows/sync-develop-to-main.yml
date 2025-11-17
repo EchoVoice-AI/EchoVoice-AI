@@ -11,11 +11,7 @@ permissions:
 
 jobs:
   sync:
-    name: Create PR from develop to main and enable auto-merge
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
-      pull-requests: write
 
     steps:
       - name: Checkout
@@ -31,48 +27,17 @@ jobs:
           pr_body: |
             This PR is automatically created by CI to sync `develop` into `main`.
           pr_label: chore
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.PAT_PR }}
+
       - name: Enable auto-merge on PR
         if: steps.create_pr.outputs.pull-request-number != ''
         uses: actions/github-script@v7
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.PAT_PR }}   # OK
           script: |
             const prNumber = Number("${{ steps.create_pr.outputs.pull-request-number }}");
-
             if (!prNumber) {
               core.warning("No PR number detected — cannot enable auto-merge.");
               return;
             }
-
             core.info(`Attempting to enable auto-merge for PR #${prNumber}`);
-
-            const { data: pr } = await github.rest.pulls.get({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              pull_number: prNumber
-            });
-
-            const prNodeId = pr.node_id;
-
-            const mutation = `
-              mutation ($prId: ID!) {
-                enablePullRequestAutoMerge(input: {
-                  pullRequestId: $prId,
-                  mergeMethod: MERGE
-                }) {
-                  pullRequest {
-                    number
-                    autoMergeRequest { enabledAt }
-                  }
-                }
-              }
-            `;
-
-            try {
-              const result = await github.graphql(mutation, { prId: prNodeId });
-              core.info("Auto-merge successfully enabled:");
-              core.info(JSON.stringify(result, null, 2));
-            } catch (error) {
-              core.warning("Failed to enable auto-merge: " + error.message);
-            }

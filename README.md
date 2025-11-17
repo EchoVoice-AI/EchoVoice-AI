@@ -36,26 +36,24 @@ pip install -r requirements.txt
 
 ```bash
 cd backend
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
+uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
 ---
 
-### **4. Trigger the multi-agent pipeline**
+### **3. Check health of server**
 
-POST an event to:
+GET request:
 
 ```bash
-POST http://localhost:8000/orchestrate
+GET http://localhost:8000/health
 ```
 
 Example payload:
 
 ```json
 {
-  "user_id": "U12345",
-  "event": "cart_abandoned",
-  "timestamp": "2025-11-16T10:22:00Z"
+  "status": "ok",
 }
 ```
 
