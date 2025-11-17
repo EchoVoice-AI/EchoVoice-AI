@@ -30,3 +30,11 @@ threadpoolctl==3.6.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.38.0
+
+# LangChain + OpenAI stack
+langchain==0.2.11
+langchain-community
+langchain-openai
+faiss-cpu
+tiktoken==0.7.0
+openai>=1.40.0
