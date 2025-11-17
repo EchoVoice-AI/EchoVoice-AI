@@ -13,7 +13,7 @@ idna==3.11
 iniconfig==2.3.0
 joblib==1.5.2
 numpy==2.3.5
-packaging==25.0
+packaging>=23.2,<25
 pluggy==1.6.0
 pydantic==2.12.4
 pydantic_core==2.41.5
