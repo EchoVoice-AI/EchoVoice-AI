@@ -35,3 +35,7 @@ else:
 def get_allowed_origins() -> List[str]:
 	"""Return the configured origins list."""
 	return ALLOWED_ORIGINS
+
+
+# Redis URL for adapter (optional - set to enable Redis-backed store)
+REDIS_URL = os.getenv("REDIS_URL")

@@ -68,6 +68,35 @@ This simulates the full end-to-end personalization flow:
 
 ---
 
+## 🛠️ Deployment / Configuration Notes
+
+Optional Redis-backed store
+
+* The backend can persist transient orchestration state in Redis by setting the `REDIS_URL` environment variable (for example `redis://localhost:6379/0`). When `REDIS_URL` is set, the app will attempt to use Redis via the `redis` Python package. If Redis is not available the app falls back to an in-memory `MemoryStore`.
+
+Add/enable Redis (example `.env`):
+
+```env
+# Optional: enable Redis-backed store for cross-process persistence
+REDIS_URL=redis://localhost:6379/0
+```
+
+Dependencies
+
+* The optional Redis adapter requires the `redis` client; it has been added to `backend/requirements.txt`. Install/update dependencies in the backend venv:
+
+```powershell
+cd backend
+& .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Notes
+
+* `MemoryStore` is process-local and thread-safe via a simple lock; it is suitable for single-process development and test runs.
+* Use Redis in multi-worker or distributed deployments to share transient orchestration state across processes and machines.
+* If you want, I can add a Docker Compose service or a small integration test that runs Redis locally for CI.
+
 ## 📁 Repository Layout
 
 ```bash
