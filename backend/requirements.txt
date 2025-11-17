@@ -12,7 +12,8 @@ httpx==0.28.1
 idna==3.11
 iniconfig==2.3.0
 joblib==1.5.2
-numpy==2.3.5
+# numpy must be <2.0.0 for langchain==0.2.11
+numpy>=1.26.0,<2.0.0
 packaging==25.0
 pluggy==1.6.0
 pydantic==2.12.4
@@ -29,3 +30,11 @@ threadpoolctl==3.6.0
 typing-inspection==0.4.2
 typing_extensions==4.15.0
 uvicorn==0.38.0
+
+# LangChain + OpenAI stack
+langchain==0.2.11
+langchain-community
+langchain-openai
+faiss-cpu
+tiktoken==0.7.0
+openai>=1.40.0
