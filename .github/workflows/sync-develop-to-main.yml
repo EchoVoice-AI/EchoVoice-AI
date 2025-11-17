@@ -27,7 +27,7 @@ jobs:
           pr_body: |
             This PR is automatically created by CI to sync `develop` into `main`.
           pr_label: chore
-          GITHUB_TOKEN: ${{ secrets.PAT_PR }}
+          github_token: ${{ secrets.PAT_PR }}
 
       - name: Enable auto-merge on PR
         if: steps.create_pr.outputs.pull-request-number != ''
