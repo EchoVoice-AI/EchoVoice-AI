@@ -1,0 +1,171 @@
+@startuml EchoVoice Personalization Flow
+!theme plain
+skinparam sequenceParticipant underline
+
+title EchoVoice: Complete Personalization Pipeline
+
+actor Client as client
+participant "FastAPI\nServer" as server
+participant "Orchestrator" as orchestrator
+participant "Segmenter\nNode" as segmenter
+participant "Retriever\nNode" as retriever
+participant "Vector DB\n(FAISS)" as vectordb
+participant "Generator\nNode" as generator
+participant "Safety\nNode" as safety
+participant "Analytics\nNode" as analytics
+participant "State Store\n(Memory/Redis)" as store
+participant "Delivery\nService" as delivery
+
+== 1. REQUEST INITIATION ==
+client ->> server: POST /personalize\n{id, email, viewed_page, ...}
+activate server
+
+server ->> orchestrator: run_flow("personalize", payload)
+activate orchestrator
+
+note over orchestrator: Initialize flow_started marker
+
+== 2. SEGMENTATION ==
+orchestrator ->> segmenter: run(customer_profile)
+activate segmenter
+
+note over segmenter: Classify customer intent\nDetermine funnel stage\nAssign segment label
+segmenter ->> segmenter: segment_user(customer)
+note over segmenter: Logic:\n- Attended? → "Very High" intent\n- Scheduled? → "High" intent\n- Form started? → "Medium" intent\n- Just viewed? → "Low" intent
+
+segmenter ->> orchestrator: return {segment, intent_level, \nfunnel_stage, reasons}
+deactivate segmenter
+
+orchestrator ->> store: set("U123:segment", segment)
+activate store
+store -->> orchestrator: OK
+deactivate store
+
+orchestrator ->> server: log("Segment: StartedFormOrFlow")
+
+== 3. RETRIEVAL (RAG) ==
+orchestrator ->> retriever: run(customer_profile)
+activate retriever
+
+note over retriever: Build search query from:\n- Segment label\n- Intent level\n- Use case
+
+retriever ->> vectordb: similarity_search(\n"payment_plans", top_k=5)
+activate vectordb
+
+note over vectordb: FAISS vector search\nMeasure semantic similarity\nReturn ranked results
+
+vectordb -->> retriever: [doc1, doc2, doc3, doc4, doc5]
+deactivate vectordb
+
+note over retriever: Apply PII Redaction:\n- Email → [REDACTED_EMAIL]\n- Phone → [REDACTED_PHONE]\n- SSN → [REDACTED_SSN]
+
+retriever ->> orchestrator: return [{id, title, \nredacted_text, url, source}, ...]
+deactivate retriever
+
+orchestrator ->> store: set("U123:citations", citations)
+activate store
+store -->> orchestrator: OK
+deactivate store
+
+orchestrator ->> server: log("Citations: 5 documents found")
+
+== 4. GENERATION (A/B/n Variants) ==
+orchestrator ->> generator: run({customer, segment, citations})
+activate generator
+
+note over generator: Create multiple variants:\n- Variant A: Short, urgent tone\n- Variant B: Long, educational\n- Variant C: Social proof
+
+generator ->> generator: generate_variants(\ncustomer, segment, citations)
+
+note over generator: Personalize with:\n- Customer name\n- Segment label\n- Citation content\n- Historical patterns
+
+generator ->> orchestrator: return [{id, subject, \nbody, meta}, ...]
+deactivate generator
+
+orchestrator ->> store: set("U123:variants", variants)
+activate store
+store -->> orchestrator: OK
+deactivate store
+
+orchestrator ->> server: log("Generated 3 variants")
+
+== 5. SAFETY & COMPLIANCE GATE ==
+orchestrator ->> safety: run(variants)
+activate safety
+
+note over safety: Multi-layer Safety Checks:
+
+par Check 1: PII Detection
+  safety ->> safety: detect_pii(variant_body)
+  note over safety: Find: emails, SSNs,\nphone numbers, accounts
+else Check 2: Brand Alignment
+  safety ->> safety: check_brand(variant_subject, body)
+  note over safety: Validate: tone, vocabulary,\nlogo usage, color compliance
+else Check 3: Compliance Rules
+  safety ->> safety: check_compliance(variant)
+  note over safety: Required disclaimers?\nLegal language correct?
+else Check 4: Factual Grounding
+  safety ->> safety: check_facts(variant, citations)
+  note over safety: Claims backed by citations?\nNumbers accurate?\nDates current?
+end
+
+note over safety: Result:\nVariant A: SAFE (score 0.98)\nVariant B: SAFE (score 0.95)\nVariant C: BLOCKED (PII detected)
+
+safety ->> orchestrator: return {safe: [A, B],\nblocked: [{id: C, reason: ...}]}
+deactivate safety
+
+orchestrator ->> server: log("Safety: 2 safe, 1 blocked")
+
+== 6. ANALYTICS & WINNER SELECTION ==
+orchestrator ->> analytics: run({safe_variants, customer})
+activate analytics
+
+note over analytics: Score Variants:\n- Historical CTR data\n- Segment affinity\n- Customer engagement\n- Citation freshness\n- Safety score
+
+analytics ->> analytics: score_variants(variants, customer)
+
+note over analytics: Selection Logic:\nWinner = Variant A\nReason: Highest expected CTR\nfor high-intent customers\nScore: 0.89, Confidence: 0.92
+
+analytics ->> orchestrator: return {winner: {variant_id, \nreason, score, confidence},\nexperiment: {...}, metrics: {...}}
+deactivate analytics
+
+orchestrator ->> store: set("U123:analysis", analysis)
+activate store
+store -->> orchestrator: OK
+deactivate store
+
+orchestrator ->> store: set("U123:winner", winner)
+activate store
+store -->> orchestrator: OK
+deactivate store
+
+orchestrator ->> server: log("Winner: Variant A (0.89 score)")
+
+== 7. DELIVERY ==
+orchestrator ->> delivery: send_email_mock(\nemail, subject, body)
+activate delivery
+
+note over delivery: Mock delivery in dev:\n- Log to console\n- No actual email sent\n\nProduction:\n- Call SendGrid/Mailgun\n- Ensure delivery\n- Track opens/clicks
+
+delivery ->> orchestrator: return {status: "success",\nmessage_id: "msg_abc123"}
+deactivate delivery
+
+orchestrator ->> server: log("Delivered to customer@example.com")
+
+== 8. RESPONSE ASSEMBLY ==
+deactivate orchestrator
+
+note over server: Assemble response:\n- segment result\n- citations\n- variants\n- safety result\n- analysis\n- delivery status
+
+server ->> client: HTTP 200 OK\n{\n  "segment": {...},\n  "citations": [...],\n  "variants": [...],\n  "safety": {...},\n  "analysis": {...},\n  "delivery": {...}\n}
+deactivate server
+
+== AUDIT TRAIL ==
+note over client: CLIENT NOW HAS:\n✓ Full audit trail\n✓ Every step logged\n✓ Decision rationale\n✓ Safety checks passed\n✓ Blocked variant reasons\n✓ Winner selection score\n✓ Proof of compliance
+
+client ->> client: Inspect audit trail\nclient ->> client: Review decision path\nclient ->> client: Verify compliance
+
+== STATE STORE PERSISTENCE ==
+note over store: All intermediate results persisted:\nkey → value\n"U123:flow_started" → {flow, timestamp}\n"U123:segment" → {segment, intent, ...}\n"U123:citations" → [{id, title, ...}, ...]\n"U123:variants" → [{id, subject, body}, ...]\n"U123:analysis" → {winner, metrics, ...}\n"U123:winner" → {variant_id, score, ...}\n\nTTL: 1 hour (auto cleanup)\nStorage: Memory (dev) or Redis (prod)
+
+@enduml

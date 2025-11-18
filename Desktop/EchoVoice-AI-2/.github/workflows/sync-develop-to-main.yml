@@ -1,0 +1,43 @@
+name: Sync develop -> main
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create pull request (develop -> main)
+        id: create_pr
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: develop
+          destination_branch: main
+          pr_title: "chore: sync develop -> main"
+          pr_body: |
+            This PR is automatically created by CI to sync `develop` into `main`.
+          pr_label: chore
+          github_token: ${{ secrets.PAT_PR }}
+
+      - name: Enable auto-merge on PR
+        if: steps.create_pr.outputs.pull-request-number != ''
+        uses: actions/github-script@v7
+        with:
+          github-token: ${{ secrets.PAT_PR }}   # OK
+          script: |
+            const prNumber = Number("${{ steps.create_pr.outputs.pull-request-number }}");
+            if (!prNumber) {
+              core.warning("No PR number detected — cannot enable auto-merge.");
+              return;
+            }
+            core.info(`Attempting to enable auto-merge for PR #${prNumber}`);

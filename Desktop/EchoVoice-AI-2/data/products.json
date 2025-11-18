@@ -1,0 +1,16 @@
+[
+  {
+    "id": "p_101",
+    "title": "Acme Premium Plan",
+    "content": "The Acme Premium Plan includes 24/7 support and a 30-day money-back guarantee.",
+    "source": "product_docs",
+    "last_updated": "2025-01-01"
+  },
+  {
+    "id": "p_102",
+    "title": "Acme Basic Plan",
+    "content": "The Basic Plan provides essential features with email support.",
+    "source": "product_docs",
+    "last_updated": "2024-09-10"
+  }
+]

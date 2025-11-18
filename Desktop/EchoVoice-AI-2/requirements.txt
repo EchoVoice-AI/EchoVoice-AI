@@ -1,0 +1,7 @@
+fastapi==0.101.1
+uvicorn==0.23.2
+python-dotenv==1.0.0
+
+# Updated for Python 3.12 compatibility
+numpy>=2.0.0,<3.0.0
+scikit-learn>=1.4.0,<2.0.0
