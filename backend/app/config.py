@@ -10,6 +10,22 @@ VECTOR_DB_ENDPOINT = os.getenv('VECTOR_DB_ENDPOINT')
 VECTOR_DB_API_KEY = os.getenv('VECTOR_DB_API_KEY')
 DELIVERY_PROVIDER_API_KEY = os.getenv('DELIVERY_PROVIDER_API_KEY')
 LOG_LEVEL = os.getenv('LOG_LEVEL', 'INFO')
+# Azure OpenAI (for embeddings + chat)
+AZURE_OPENAI_ENDPOINT = os.getenv("AZURE_OPENAI_ENDPOINT")
+AZURE_OPENAI_API_KEY = os.getenv("AZURE_OPENAI_API_KEY")
+AZURE_OPENAI_API_VERSION = os.getenv("AZURE_OPENAI_API_VERSION", "2024-02-15-preview")
+
+# Embeddings deployment (to use this in vector_db)
+AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT = os.getenv(
+    "AZURE_OPENAI_EMBEDDINGS_DEPLOYMENT"
+)
+
+# NEW: chat deployment name for generator
+AZURE_OPENAI_CHAT_DEPLOYMENT = os.getenv("AZURE_OPENAI_CHAT_DEPLOYMENT")
+
+# Optional: non-Azure OpenAI fallback
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+OPENAI_MODEL_NAME = os.getenv("OPENAI_MODEL_NAME", "gpt-4o-mini")
 
 # Environment (development|production)
 ENV = os.getenv("ENV", os.getenv("APP_ENV", "development")).lower()
