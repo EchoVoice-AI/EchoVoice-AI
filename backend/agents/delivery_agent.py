@@ -77,7 +77,7 @@ def deliver_for_user(context: Dict[str, Any]) -> Dict[str, Any]:
 
     to_email = customer.get("email")
     if not to_email:
-        logger.warning("Customer missing email; skipping delivery", customer)
+        logger.warning("Customer missing email; skipping delivery %s", customer)
         return {"status": "no_recipient", "customer": customer}
 
     # Determine safe variants
@@ -94,7 +94,7 @@ def deliver_for_user(context: Dict[str, Any]) -> Dict[str, Any]:
     # Find winner
     winner_variant = _find_winner_variant(safe_variants, analysis)
     if not winner_variant:
-        logger.info("No winner found for customer; nothing to deliver", customer.get("id"))
+        logger.info("No winner found for customer; nothing to deliver %s", customer.get("id"))
         return {"status": "no_winner"}
 
     variant_id = winner_variant.get("id")
@@ -103,12 +103,12 @@ def deliver_for_user(context: Dict[str, Any]) -> Dict[str, Any]:
 
     # Respect dry-run option
     if dry_run:
-        logger.info("Dry run delivery", to_email, variant_id)
+        logger.info("Dry run delivery %s %s", to_email, variant_id)
         return {"status": "dry_run", "to": to_email, "variant_id": variant_id}
 
     try:
         delivery_resp = send_email_mock(to_email, subject, body)
-        logger.info("Delivered variant", variant_id, "to", to_email)
+        logger.info("Delivered variant %s to %s", variant_id, to_email)
         return {"status": "sent", "variant_id": variant_id, "delivery": delivery_resp}
     except Exception as exc:
         logger.exception("Delivery failed for %s", to_email)
