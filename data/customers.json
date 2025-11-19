@@ -1,16 +1,14 @@
 [
   {
-    "id": "cust_001",
-    "name": "Alice",
-    "email": "alice@example.com",
-    "last_event": "viewed_product",
-    "properties": {"product_id":"p_101","session_length":120}
-  },
-  {
-    "id": "cust_002",
-    "name": "Bob",
-    "email": "bob@example.com",
-    "last_event": "started_form",
-    "properties": {"form":"signup","progress":0.4}
+  "id": "cust_002",
+  "name": "Bob",
+  "email": "bob@example.com",
+  "last_event": "payment_plans",
+  "properties": {
+    "form_started": "yes",
+    "scheduled": "no",
+    "attended": "no"
   }
+}
+
 ]

@@ -1,3 +1,4 @@
+
 user_id,email,viewed_page,form_started,scheduled,attended
 U001,emma@example.com,running_shoes,yes,no,no
 U002,liam@example.com,wireless_headphones,no,no,no
@@ -9,3 +10,4 @@ U007,sophia@example.com,smartphone_cases,yes,no,no
 U008,james@example.com,fitness_tracker,yes,yes,no
 U009,isabella@example.com,skincare_bundle,no,no,no
 U010,ben@example.com,holiday_gift_sets,yes,yes,yes
+
