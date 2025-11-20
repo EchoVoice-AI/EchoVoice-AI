@@ -26,10 +26,10 @@ jiter==0.12.0
 joblib==1.5.2
 jsonpatch==1.33
 jsonpointer==3.0.0
-langchain==1.0.7
+langchain
 langchain-classic==1.0.0
-langchain-community==0.4.1
-langchain-core==1.0.5
+langchain-community
+langchain-core
 langchain-openai==1.0.3
 langchain-text-splitters==1.0.0
 langgraph==1.0.3
