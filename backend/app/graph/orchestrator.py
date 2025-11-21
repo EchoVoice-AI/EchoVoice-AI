@@ -12,6 +12,7 @@ from app.nodes.segmenter_node import SegmenterNode
 from app.nodes.retriever_node import RetrieverNode
 from app.nodes.generator_node import GeneratorNode
 from app.nodes.safety_node import SafetyNode
+from app.nodes.hitl_node import HITLNode
 from app.nodes.analytics_node import AnalyticsNode
 from services.delivery import send_email_mock
 
@@ -36,6 +37,7 @@ class Orchestrator:
         retriever: Optional[RetrieverNode] = None,
         generator: Optional[GeneratorNode] = None,
         safety: Optional[SafetyNode] = None,
+        hitl: Optional[HITLNode] = None, 
         analytics: Optional[AnalyticsNode] = None,
     ) -> None:
         # prefer an explicitly provided store, otherwise fall back to the module-level `store`
@@ -46,6 +48,7 @@ class Orchestrator:
         self.retriever = retriever or RetrieverNode()
         self.generator = generator or GeneratorNode()
         self.safety = safety or SafetyNode()
+        self.hitl = hitl or HITLNode() 
         self.analytics = analytics or AnalyticsNode()
 
     def close(self) -> None:
@@ -54,7 +57,7 @@ class Orchestrator:
         This is a best-effort hook. If nodes expose a `close` or
         `shutdown` method it will be called.
         """
-        for node in (self.segmenter, self.retriever, self.generator, self.safety, self.analytics):
+        for node in (self.segmenter, self.retriever, self.generator, self.safety,self.hitl, self.analytics):
             try:
                 close_fn = getattr(node, "close", None) or getattr(node, "shutdown", None)
                 if callable(close_fn):
@@ -122,8 +125,24 @@ class Orchestrator:
         safe_count = len(safety_result.get("safe", [])) if isinstance(safety_result, dict) else 0
         blocked_count = len(safety_result.get("blocked", [])) if isinstance(safety_result, dict) else 0
         self.logger.info(f"Safety safe={safe_count} blocked={blocked_count}")
+        
 
-        # 5. Analytics / choose winner
+        # 5.  Human-in-the-loop (HITL)
+        hitl_result = None
+        safe_variants = (
+            safety_result.get("safe", []) if isinstance(safety_result, dict) else []
+        )
+        if safe_variants:
+            # HITLNode should accept (customer, safe_variants)
+            hitl_result = self.hitl.run(payload, safe_variants)
+            # Example hitl_result: {"review_id": "...", "status": "pending_human_approval"}
+            self.logger.info(f"HITL: {hitl_result}")
+            try:
+                self.store.set(f"{key}:hitl", hitl_result)
+            except Exception:
+                self.logger.exception("failed to persist hitl result")
+
+        # 6. Analytics / choose winner
         analysis = self.analytics.run({"variants": safety_result.get("safe", []), "customer": payload}) if isinstance(safety_result, dict) else None
         winner = analysis.get("winner") if isinstance(analysis, dict) and analysis else None
         try:
@@ -133,18 +152,20 @@ class Orchestrator:
         except Exception:
             self.logger.exception("failed to persist analysis/winner")
 
-        # 6. Delivery (mock)
+        # 7. Delivery (mock)
         delivery_result = None
         if winner and isinstance(safety_result, dict):
             variant = next((v for v in safety_result.get("safe", []) if v.get("id") == winner.get("variant_id")), None)
             if variant:
                 delivery_result = send_email_mock(payload.get("email"), variant.get("subject"), variant.get("body"))
 
+        
         response = {
             "segment": segment,
             "citations": citations,
             "variants": variants,
             "safety": safety_result,
+            "hitl": hitl_result,
             "analysis": analysis,
             "delivery": delivery_result,
         }
