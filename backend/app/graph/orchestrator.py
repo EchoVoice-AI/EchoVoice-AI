@@ -79,13 +79,28 @@ class Orchestrator:
             logger.exception("failed to persist flow marker")
 
         # 1. Segmentation
-        segment = self.segmenter.run(payload)
+        properties = payload.get("properties") or {}
+
+        # ✅ Map external payload -> segmenter input schema
+        segmenter_customer = {
+            "user_id": payload.get("id"),
+            "email": payload.get("email"),
+            # interpret `last_event` as the page / use case the user interacted with
+            "viewed_page": payload.get("last_event"),
+            # these flags live inside `properties` in the public API
+            "form_started": properties.get("form_started"),
+            "scheduled": properties.get("scheduled"),
+            "attended": properties.get("attended"),
+        }
+
+        # 1. Segmentation (use mapped customer, not raw payload)
+        # ✅ Call segmenter with the mapped customer dict
+        segment = self.segmenter.run(segmenter_customer)
         self.logger.info(f"Segment: {segment}")
         try:
             self.store.set(f"{key}:segment", segment)
         except Exception:
             self.logger.exception("failed to persist segment")
-
         # 2. Retrieval
         citations = self.retriever.run(payload)
         self.logger.info(f"Citations: {citations}")

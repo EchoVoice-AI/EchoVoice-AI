@@ -73,11 +73,18 @@ async def get_orchestrator(
 
 
 class CustomerModel(BaseModel):
-    id: Optional[str] = None
-    name: Optional[str] = None
-    email: Optional[str] = None
-    last_event: Optional[str] = None
-    properties: Dict[str, Any] = Field(default_factory=dict)
+    id: Optional[str] = Field(None, example="U001")
+    name: Optional[str] = Field(None, example="Selvi")
+    email: Optional[str] = Field(None, example="a@example.com")
+    last_event: Optional[str] = Field(None, example="payment_plans")
+    properties: Dict[str, Any] = Field(
+        default_factory=dict,
+        example={
+            "form_started": "yes",
+            "scheduled": "no",
+            "attended": "no"
+        },
+    )
 
 
 class OrchestrateRequest(BaseModel):
