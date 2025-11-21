@@ -35,7 +35,7 @@ async def orchestrate(payload: OrchestrateRequest):
 
     # 1. Segmentation
     segment = segment_user(customer)
-    logger.info(f"Segment: {segment}"X)
+    logger.info(f"Segment: {segment}")
 
     # 2. Retrieval
     citations = retrieve_citations(customer)
