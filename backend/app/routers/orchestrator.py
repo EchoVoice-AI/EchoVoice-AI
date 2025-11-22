@@ -5,6 +5,7 @@ from typing import Optional, Dict, Any, AsyncGenerator
 from services.logger import get_logger
 from app.store import MemoryStore, store
 from app.graph import Orchestrator
+from app.nodes.segmenter_node import SegmenterNode
 
 
 router = APIRouter()
@@ -14,10 +15,13 @@ logger = get_logger("orchestrator")
 def get_store() -> MemoryStore:
     """Return the global in-memory store singleton."""
     return store
-
+def get_segmenter() -> SegmenterNode:
+    """Default segmenter provider (can be overridden in tests)."""
+    return SegmenterNode()
 
 async def get_orchestrator(
     store: MemoryStore = Depends(get_store),
+    segmenter: SegmenterNode = Depends(get_segmenter), 
 ) -> AsyncGenerator[Orchestrator, None]:
     """Yield a per-request Orchestrator instance.
 
@@ -27,6 +31,7 @@ async def get_orchestrator(
     orch = Orchestrator(
         store_=store,
         logger_=logger,
+        segmenter=segmenter,    
     )
     try:
         yield orch

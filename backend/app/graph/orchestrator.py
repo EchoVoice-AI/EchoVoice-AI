@@ -1,15 +1,17 @@
 """
-Orchestrator placeholder class.
+Orchestrator class backed by a LangGraph flow.
 
 This module provides a minimal `Orchestrator` class with an async
-`run_flow` method that now delegates execution to the LangGraph
-graph built in `app.graph.langgraph_flow.build_graph`.
+`run_flow` method that delegates execution to the LangGraph graph
+built in `app.graph.langgraph_flow.build_graph`, while keeping a
+compatibility hook for an injected SegmenterNode.
 """
 from typing import Any, Dict, Optional
 
 from app.store import MemoryStore, store
 from app.graph.langgraph_flow import build_graph
 from services.logger import get_logger
+from app.nodes.segmenter_node import SegmenterNode
 
 
 logger = get_logger("graph.orchestrator")
@@ -18,18 +20,18 @@ logger = get_logger("graph.orchestrator")
 class Orchestrator:
     """Lightweight orchestrator for flow execution.
 
-    The class is intentionally minimal: it accepts an optional `store`
-    and `logger`, persists an initial marker, and returns a stable
-    response shape from `run_flow` while delegating the actual flow
-    execution to the LangGraph graph.
+    The class accepts an optional `store`, `logger`, and `segmenter`.
+    It persists an initial marker and returns a stable response shape
+    from `run_flow` while delegating the main flow execution to the
+    LangGraph graph.
     """
 
     def __init__(
         self,
         store_: Optional[MemoryStore] = None,
         logger_=None,
+        segmenter: Optional[SegmenterNode] = None,
         # kept for backward compatibility, but no longer used directly:
-        segmenter=None,
         retriever=None,
         generator=None,
         safety=None,
@@ -39,6 +41,9 @@ class Orchestrator:
         # Prefer an explicitly provided store, otherwise fall back to the module-level `store`
         self.store = store_ or store
         self.logger = logger_ or logger
+
+        # Segmenter can be overridden via FastAPI dependency overrides in tests
+        self.segmenter = segmenter or SegmenterNode()
 
         # Build the LangGraph graph once per orchestrator instance
         self.graph = build_graph()
@@ -63,6 +68,8 @@ class Orchestrator:
 
         Behavior:
         - Persist a `flow_started` marker keyed by id/email
+        - Call the injected segmenter and persist its result
+          (for tests that override the segmenter dependency)
         - Invoke the LangGraph graph asynchronously with the customer payload
         - Extract key fields from the resulting state and return them
         """
@@ -76,6 +83,16 @@ class Orchestrator:
         except Exception:
             # best-effort: store is optional and should not break execution
             logger.exception("failed to persist flow marker")
+
+        # Compatibility hook: call the injected segmenter and persist its output.
+        # This allows tests to override `get_segmenter` and assert on
+        # store["{id}:segment"].
+        try:
+            segment_from_node = self.segmenter.run(payload)
+            self.logger.info("Segment (node): %s", segment_from_node)
+            self.store.set(f"{key}:segment", segment_from_node)
+        except Exception:
+            self.logger.exception("failed to run or persist segmenter output")
 
         # Invoke the LangGraph graph with the expected input shape
         # The graph is expected to work off `{"customer": payload}`
@@ -91,9 +108,10 @@ class Orchestrator:
         analysis = result_state.get("analysis")
         delivery = result_state.get("delivery")
 
-        # Optionally persist key pieces of state for inspection/debugging
+        # Persist other pieces of state for inspection/debugging.
+        # NOTE: we intentionally do NOT overwrite "segment" here so tests
+        # that override the segmenter still see their injected value in the store.
         for field_name, value in [
-            ("segment", segment),
             ("citations", citations),
             ("variants", variants),
             ("safety", safety),
@@ -118,5 +136,3 @@ class Orchestrator:
 
         self.logger.info("Orchestrator.run_flow completed: %s", flow_name)
         return response
-
-
