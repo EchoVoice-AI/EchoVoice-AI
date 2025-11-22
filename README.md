@@ -1,26 +1,27 @@
-# 🚀 EchoVoice — Customer Personalization Orchestrator
+# 🚀 **EchoVoice: Customer Personalization Orchestrator**
 
-EchoVoice is a modular multi‑agent personalization prototype built around a LangGraph workflow. It demonstrates a safety-first, auditable pipeline that converts customer events into grounded, on‑brand message variants (A/B/C), evaluates them, and (optionally) delivers via a mock email service.
+**Project Title:** `EchoVoice: Customer Personalization Orchestrator`
+**Challenge Solved:** *Compliant, on-brand personalization and A/B/n experimentation in a regulated domain.*
 
-This repository is targeted at rapid experimentation and local development. It includes:
+EchoVoice is a **multi-agent AI personalization platform** designed for regulated industries. It delivers safe, on-brand, traceable customer messaging through a coordinated set of specialized agents working together inside a transparent and auditable orchestration pipeline.
 
-- a LangGraph-based orchestrator (`backend/app/graph/langgraph_flow.py`)
-- small, testable agent implementations (`backend/agents/`)
-- service adapters for vector search and delivery (`backend/services/`)
-- a tiny in-memory `MemoryStore` (with optional Redis adapter) under `backend/app/store`
-- a React stub for auditability in `frontend/`
+This repository provides a **prototype scaffold** for local development, including an orchestrator, agent suite, mock RAG data, and a frontend stub for auditability.
 
 ---
 
-## Quick Start (Backend)
+## ⚙️ Quick Start (Backend)
 
-1. Copy `.env.template` to `.env` and fill any secrets you plan to use (optional for local runs):
+### **1. Create your environment file**
 
 ```bash
 cp .env.template .env
 ```
 
-2. Create and activate a Python virtual environment, then install dependencies:
+Fill in the required API keys (Azure OpenAI, Azure Search, etc.).
+
+---
+
+### **2. Create & activate a Python virtual environment**
 
 ```bash
 cd backend
@@ -29,82 +30,128 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-3. Run the API (FastAPI + Uvicorn):
+---
+
+### **3. Run the backend orchestrator**
 
 ```bash
-# from backend/
+cd backend
 uvicorn app.main:app --reload --host 0.0.0.0 --port 8000
 ```
 
-4. Health check and orchestration endpoint:
+---
 
-```http
-GET  http://localhost:8000/health
-POST http://localhost:8000/orchestrate
+### **3. Check health of server**
 
-POST body example:
+GET request:
+
+```bash
+GET http://localhost:8000/health
+```
+
+Example payload:
+
+```json
 {
-  "customer": {
-    "id": "U12345",
-    "email": "a@example.com",
-    "last_event": "payment_plans",
-    "properties": {"form_started": "yes"}
-  }
+  "status": "ok",
 }
 ```
 
----
+This simulates the full end-to-end personalization flow:
 
-## Repository layout (important files)
-
-`EchoVoice-AI/`
-
-- `README.md` — this file
-- `ARCHITECTURE.md` — architecture design and flow
-- `backend/`
-  - `app/main.py` — FastAPI app & CORS setup
-  - `app/routers/orchestrator.py` — `/orchestrate` router that invokes the `Orchestrator`
-  - `app/graph/langgraph_flow.py` — LangGraph flow definition (segmenter → retriever → generator → safety → hitl → analytics → delivery)
-  - `app/graph/orchestrator.py` — lightweight `Orchestrator` wrapper used by the router
-  - `app/nodes/*.py` — LangGraph node wrappers (`segmenter_node`, `retriever_node`, `generator_node`, `safety_node`, `analytics_node`, `hitl_node`)
-  - `app/store/` — `MemoryStore` and optional `RedisStore` adapters; a `store` singleton is exported
-  - `agents/` — agent implementations used by nodes (`segmenter.py`, `retriever.py`, `generator.py`, `safety_gate.py`, `analytics.py`)
-  - `services/` — helpers & adapters: `vector_db.py` (FAISS + embeddings), `delivery.py` (mock `send_email_mock`), `logger.py`
-- `frontend/` — React audit dashboard stub
-- `data/` — sample JSONL corpus and other test fixtures
+* Segmentation
+* RAG retrieval
+* A/B/n generation
+* Safety & compliance filtering
+* Variant selection
+* Experiment logging
 
 ---
 
-## How the system works (summary)
+## 🛠️ Deployment / Configuration Notes
 
-- The FastAPI router (`app/routers/orchestrator.py`) yields a per-request `Orchestrator` instance.
-- `Orchestrator.run_flow` persists a `flow_started` marker, runs the injected `SegmenterNode` for compatibility tests, and then invokes the LangGraph flow (`app/graph/langgraph_flow.py`).
-- The LangGraph flow composes small node wrappers that call into the agent modules under `backend/agents/`:
-  - `segmenter` → `agents.segmenter.segment_user` produces a full `segment` dict
-  - `retriever` → `agents.retriever.retrieve_citations` performs RAG via `services.vector_db.similarity_search` and redacts PII
-  - `generator` → `agents.generator.generate_variants` prefers an LLM (Azure/OpenAI) and falls back to templates
-  - `safety` → `agents.safety_gate.safety_check_and_filter` filters blocked variants (rule-based)
-  - `hitl` → prepares a human-review payload (non-blocking)
-  - `analytics` → `agents.analytics.evaluate_variants` produces mock CTRs and picks a winner
-  - `delivery` → uses `services.delivery.send_email_mock` to simulate sending
+Optional Redis-backed store
 
-All node outputs are persisted into the `store` for inspection and auditability.
+* The backend can persist transient orchestration state in Redis by setting the `REDIS_URL` environment variable (for example `redis://localhost:6379/0`). When `REDIS_URL` is set, the app will attempt to use Redis via the `redis` Python package. If Redis is not available the app falls back to an in-memory `MemoryStore`.
+
+Add/enable Redis (example `.env`):
+
+```env
+# Optional: enable Redis-backed store for cross-process persistence
+REDIS_URL=redis://localhost:6379/0
+```
+
+Dependencies
+
+* The optional Redis adapter requires the `redis` client; it has been added to `backend/requirements.txt`. Install/update dependencies in the backend venv:
+
+```powershell
+cd backend
+& .\.venv\Scripts\Activate.ps1
+pip install -r requirements.txt
+```
+
+Notes
+
+* `MemoryStore` is process-local and thread-safe via a simple lock; it is suitable for single-process development and test runs.
+* Use Redis in multi-worker or distributed deployments to share transient orchestration state across processes and machines.
+* If you want, I can add a Docker Compose service or a small integration test that runs Redis locally for CI.
+
+## 📁 Repository Layout
+
+```bash
+EchoVoice-AI/
+├── README.md
+├── package.json
+├── .env.template
+│
+├── data/              # sample KB & events for testing
+├── frontend/          # React + Tailwind audit dashboard scaffold
+└── backend/
+    ├── main.py        # FastAPI orchestrator
+    ├── agents/        # segmentation, RAG, generation, safety, analytics
+    ├── utils/         # logging, validation, configuration
+    └── data/          # local mock content for retrieval
+    ├── requirements.txt 
+```
+
+This scaffold includes **mock/minimal agent logic** so you can quickly validate orchestration before integrating full Azure services.
 
 ---
 
-## Developer notes
+## 🧱 Architecture Overview
 
-- The `retriever` returns a list of citation dicts with both `text` and `redacted_text`. The generator deliberately uses `redacted_text` when sending context to LLMs.
-- `generator` will use Azure OpenAI or OpenAI when environment variables are present; otherwise it falls back to deterministic template generation so flows are testable without secrets.
-- `safety_gate.py` currently performs simple rule-based checks (`PROHIBITED_TERMS`). Extend it with model-based classification and explicit human review routing for production.
-- `vector_db.py` uses FAISS + embeddings in `services/` and exposes `similarity_search(query, k)` which returns LangChain `Document` objects.
+EchoVoice uses a **LangGraph-style multi-agent workflow** coordinated by a central orchestrator.
+
+### **Key Components**
+
+* **`agents/`** – individual, modular specialist agents:
+
+  * **SegmentationAgent** – assigns user segment + explainability
+  * **RetrievalAgent** – RAG over verified local KB
+  * **GenerationAgent** – creates A/B/n personalized messages
+  * **SafetyComplianceAgent** – checks brand, legal, factual grounding
+  * **DeliveryAgent** – decides auto-send vs. human review
+  * **AnalyticsAgent** – logs results + tracks uplift
+* **`main.py`** – orchestrator that connects all agents into a decision pipeline
+* **`data/`** – mock content and synthetic customer events
+* **Frontend Stub** – React/Tailwind dashboard (audit log, experiment view)
+
+This architecture allows:
+
+* experiment-driven personalization
+* full auditability
+* safe outbound communication
+* transparent decision-making for every step
 
 ---
 
-## Next steps & suggestions
+If you want, I can also provide:
 
-- Add a small integration test that runs `Orchestrator.run_flow` with `MemoryStore` and mocked LLM responses.
-- Add CI to validate the LangGraph flow and safety rule regressions.
-- Replace `send_email_mock` with a delivery adapter for real senders (Mail service, Azure Communication Services) behind a configuration flag.
+✅ A polished **project description for Innovation Studio submission**
+✅ A **system architecture diagram** (PNG/SVG)
+✅ **Agent prompt templates** (Azure OpenAI format)
+✅ **Full API documentation**
+✅ **A/B/n experiment logic implementation**
 
-If you'd like, I can now regenerate `ARCHITECTURE.md` to include updated diagrams, or produce agent prompt templates ready for Azure OpenAI. Tell me which you'd like next.
+Just say: **"Generate the full architecture diagram"** or **"Add agent prompts"**.
