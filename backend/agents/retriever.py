@@ -1,4 +1,10 @@
-from services.vector_db import similarity_search, DEFAULT_JSONL_PATH
+
+# Import both vector DB backends for fallback
+from services.vector_db import similarity_search as faiss_similarity_search, DEFAULT_JSONL_PATH
+try:
+    from services.vector_db_azure_search import similarity_search as azure_similarity_search
+except ImportError:
+    azure_similarity_search = None
 
 
 """
@@ -110,6 +116,7 @@ def build_query_from_segment(segment_result: Dict[str, Any]) -> str:
 # Main RAG entrypoint for the agent
 # -------------------------------------------------------------------
 
+
 def retrieve_citations(
     segment_result: Dict[str, Any],
     top_k: int = 5,
@@ -117,31 +124,24 @@ def retrieve_citations(
 ) -> List[Dict[str, Any]]:
     """
     Retrieve top_k relevant citations based on the segment_result.
-
-    This is what the LangGraph node will call.
-
-    Input:
-      - segment_result: dict from segment_user()
-      - top_k: number of docs to return
-      - jsonl_path: optional override for corpus path
-
-    Output:
-      List of citation dicts:
-        {
-          "id": ...,
-          "title": ...,
-          "section": ...,
-          "text": ...,
-          "redacted_text": ...,
-          "url": ...,
-          "published_date": ...,
-          "source": "...",
-        }
+    Tries Azure Search first, falls back to FAISS if Azure Search fails or is unavailable.
     """
     query = build_query_from_segment(segment_result)
     path = jsonl_path or str(DEFAULT_JSONL_PATH)
 
-    docs = similarity_search(query=query, k=top_k, jsonl_path=path)
+    docs = []
+    azure_error = None
+    # Try Azure Search first if available
+    if azure_similarity_search is not None:
+        try:
+            docs = azure_similarity_search(query=query, k=top_k)
+        except Exception as e:
+            azure_error = e
+            # Fallback to FAISS
+    if not docs:
+        docs = faiss_similarity_search(query=query, k=top_k, jsonl_path=path)
+        if azure_error:
+            print(f"[retriever] Azure Search failed, using FAISS fallback: {azure_error}")
 
     citations: List[Dict[str, Any]] = []
     for doc in docs:
