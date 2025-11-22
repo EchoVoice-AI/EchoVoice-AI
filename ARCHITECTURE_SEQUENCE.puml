@@ -1,0 +1,92 @@
+@startuml
+title EchoVoice: LangGraph Flow (Orchestrator -> Nodes -> Agents)
+
+actor Client
+participant FastAPI
+participant Orchestrator
+participant "LangGraph\nStateGraph" as Graph
+participant SegmenterNode
+participant RetrieverNode
+participant VectorDB
+participant GeneratorNode
+participant SafetyNode
+participant HITLNode
+participant AnalyticsNode
+participant DeliveryNode
+participant Store
+
+Client -> FastAPI : POST /orchestrate (customer payload)
+activate FastAPI
+
+FastAPI -> Orchestrator : run_flow("default_personalization", customer)
+activate Orchestrator
+note right of Orchestrator : persist flow_started to store
+
+Orchestrator -> SegmenterNode : run (compatibility hook)
+activate SegmenterNode
+SegmenterNode --> Orchestrator : segment dict\n(persisted to store)
+deactivate SegmenterNode
+
+Orchestrator -> Graph : ainvoke({customer: payload})
+activate Graph
+note right of Graph : Initial state: {customer, segment=None, ...}
+
+Graph -> SegmenterNode : segmenter_node(state)
+activate SegmenterNode
+SegmenterNode --> Graph : state[segment] = segment_result
+deactivate SegmenterNode
+
+Graph -> RetrieverNode : retriever_node(state)
+activate RetrieverNode
+RetrieverNode -> VectorDB : similarity_search(query, k=5)
+activate VectorDB
+VectorDB --> RetrieverNode : list[Document]
+deactivate VectorDB
+RetrieverNode --> Graph : state[citations] = citations (with PII redaction)
+deactivate RetrieverNode
+
+Graph -> GeneratorNode : generator_node(state)
+activate GeneratorNode
+note right of GeneratorNode : LLM first, template fallback
+GeneratorNode --> Graph : state[variants] = [v_A, v_B, v_C]
+deactivate GeneratorNode
+
+Graph -> SafetyNode : safety_node(state)
+activate SafetyNode
+SafetyNode --> Graph : state[safety] = {safe: [...], blocked: [...]}
+deactivate SafetyNode
+
+Graph -> HITLNode : hitl_node(state)
+activate HITLNode
+note right of HITLNode : non-blocking, prepares review_id
+HITLNode --> Graph : state[hitl] = {review_id, status, num_variants}
+deactivate HITLNode
+
+Graph -> AnalyticsNode : analytics_node(state)
+activate AnalyticsNode
+note right of AnalyticsNode : mock CTR scoring, pick winner
+AnalyticsNode --> Graph : state[analysis] = {winner, results}
+deactivate AnalyticsNode
+
+Graph -> DeliveryNode : delivery_node(state)
+activate DeliveryNode
+DeliveryNode --> Graph : state[delivery] = send_email_mock result
+deactivate DeliveryNode
+
+Graph --> Orchestrator : final_state = {...}
+deactivate Graph
+
+Orchestrator -> Store : persist citation, variants, safety, hitl, analysis, delivery
+activate Store
+Store --> Orchestrator : ack
+deactivate Store
+
+Orchestrator --> FastAPI : response {segment, citations, variants, safety, hitl, analysis, delivery}
+deactivate Orchestrator
+
+FastAPI --> Client : 200 OK (complete flow result)
+deactivate FastAPI
+
+note over Graph : All node outputs update shared FlowState (TypedDict)\nand are persisted by Orchestrator to store for audit
+
+@enduml
