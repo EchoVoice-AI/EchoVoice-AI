@@ -1,3 +1,38 @@
+LangSmith monitoring (opt-in)
+=================================
+
+This project includes a lightweight, opt-in LangSmith instrumentation wrapper at `backend/services/langsmith_monitor.py`.
+
+Purpose
+-------
+- Provide safe, non-blocking telemetry hooks for agents (generator, retriever, etc.).
+- No-op by default so local dev and CI are unaffected.
+- When enabled, the wrapper either forwards to the LangSmith SDK (if installed and configured) or writes local JSON run files under `backend/.langsmith_local_runs/`.
+
+How to enable
+-------------
+1. Set the environment variable `LANGSMITH_ENABLED=1` or `LANGSMITH_API_KEY=<your_key>`.
+2. (Optional) Install the LangSmith SDK in your Python environment: `pip install langsmith`.
+
+Behavior
+--------
+- If `LANGSMITH_ENABLED` is not present, the wrapper functions (`start_run`, `log_event`, `finish_run`) are no-ops.
+- If enabled but the SDK is not installed, the wrapper writes JSON files to `backend/.langsmith_local_runs/` for inspection.
+- Instrumented agents: `backend/agents/generator.py` and `backend/agents/retriever.py` call the wrapper at start/finish/error points.
+
+Next steps
+----------
+1. Review the small changes in `backend/services/langsmith_monitor.py` and the agent instrumentation.
+2. Run a smoke test locally (no secrets required):
+
+```bash
+# from repo root
+backend/.venv/bin/python -c "import sys; sys.path.insert(0,'backend'); from services.langsmith_monitor import LANGSMITH_ENABLED; print('LANGSMITH_ENABLED=', LANGSMITH_ENABLED)"
+```
+
+3. To fully integrate with LangSmith UI, set `LANGSMITH_API_KEY` and install the SDK. We can then update `langsmith_monitor.py` to use the SDK client directly.
+
+4. Coordinate with the team on run naming, metadata shape, and whether to prefer a central tracer vs per-agent instrumentation.
 # LangSmith monitor (opt-in)
 
 This folder contains a lightweight, opt-in LangSmith monitoring wrapper and example instrumentation for generator and retriever agents.
