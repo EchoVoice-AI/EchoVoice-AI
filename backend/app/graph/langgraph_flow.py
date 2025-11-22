@@ -1,4 +1,6 @@
 from typing import TypedDict, Dict, Any, List
+import os
+import logging
 
 from langgraph.graph import StateGraph, END
 
@@ -9,6 +11,13 @@ from app.nodes.safety_node import SafetyNode
 from app.nodes.analytics_node import AnalyticsNode
 from app.nodes.hitl_node import HITLNode  
 from services.delivery import send_email_mock
+
+try:
+    from services.email_acs import send_email_acs
+except ImportError:
+    send_email_acs = None
+
+logger = logging.getLogger(__name__)
 
 
 class FlowState(TypedDict, total=False):
@@ -127,8 +136,9 @@ def delivery_node(state: FlowState) -> FlowState:
     """
     Delivery node.
 
-    Looks at the analytics winner and (for now) sends the corresponding
-    variant via the mock email delivery service.
+    Looks at the analytics winner and sends the corresponding variant via:
+    1. Azure Communication Services (ACS) EmailClient if configured and available
+    2. Falls back to mock delivery service for development/testing
     """
     analysis = state.get("analysis") or {}
     winner = analysis.get("winner")
@@ -150,12 +160,33 @@ def delivery_node(state: FlowState) -> FlowState:
         state["delivery"] = None
         return state
 
-    # Use the mock delivery service
+    # Extract email details
     email = state["customer"].get("email")
     subject = variant.get("subject")
     body = variant.get("body")
 
-    delivery_result = send_email_mock(email, subject, body)
+    # Try ACS email delivery first if available
+    delivery_result = None
+    if send_email_acs is not None:
+        try:
+            use_acs = os.getenv("USE_ACS_EMAIL", "false").lower() == "true"
+            if use_acs:
+                logger.info(f"[delivery] Sending email via Azure Communication Services to {email}")
+                delivery_result = send_email_acs(email, subject, body)
+                delivery_result["service"] = "acs"
+            else:
+                logger.debug("[delivery] ACS email disabled, using mock service")
+                delivery_result = send_email_mock(email, subject, body)
+                delivery_result["service"] = "mock"
+        except Exception as e:
+            logger.error(f"[delivery] ACS email failed: {e}. Falling back to mock service.")
+            delivery_result = send_email_mock(email, subject, body)
+            delivery_result["service"] = "mock"
+    else:
+        logger.debug("[delivery] ACS email not available, using mock service")
+        delivery_result = send_email_mock(email, subject, body)
+        delivery_result["service"] = "mock"
+
     state["delivery"] = delivery_result
     return state
 
