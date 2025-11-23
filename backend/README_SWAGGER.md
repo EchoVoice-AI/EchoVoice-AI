@@ -6,10 +6,10 @@ This file documents how to run a lightweight local FastAPI server that exposes t
 What it does
 - Creates a tiny FastAPI app that includes the health endpoint and a dummy `/orchestrate` route with the same request model shapes used by the real app. This is intended only for local OpenAPI inspection and development of client code.
 
-Files
+## Files
 - `run_swagger_light.py` — lightweight runner added to the `backend/` folder.
 
-Run locally (recommended)
+## Run locally (recommended)
 1. Change to the `backend/` folder:
 
 ```bash

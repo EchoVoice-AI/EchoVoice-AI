@@ -259,8 +259,8 @@ def safety_check_and_filter(variants: List[Dict[str, Any]]) -> Dict[str, Any]:
         except Exception:
             try:
                 finish_run(run_id, status="error", outputs={})
-            except Exception:
-                pass
+            except Exception as e:
+                logger.exception("Exception occurred while calling finish_run in error handling: %s", e)
 
     return result
 

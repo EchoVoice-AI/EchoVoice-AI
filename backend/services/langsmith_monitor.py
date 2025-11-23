@@ -28,7 +28,7 @@ LANGSMITH_HMAC_SECRET = os.getenv("LANGSMITH_HMAC_SECRET")
 HAS_SDK = False
 _client = None
 try:
-    import langsmith
+    # import langsmith  # Removed unused import
 
     HAS_SDK = True
     # Defer client creation until needed and after validating API key
