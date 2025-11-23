@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Dict, List, Optional
 from uuid import uuid4
 
+from app.store import reviews as review_store #to persist reviews
 from services.logger import get_logger
 
 
@@ -22,10 +23,10 @@ class HITLNode:
     NOTE:
     - This node does NOT block on a human decision.
     - It just prepares the review metadata and logs it.
-    - In a future step, you can persist this in a database/Redis/queue
-      and build API endpoints like:
+    - API endpoints like:
         - GET /hitl/{review_id}
-        - POST /hitl/decide  (approve/reject)
+        - POST /hitl/{review_id}/decision (approve/reject)
+      can load and update the stored review object.
     """
 
     def __init__(self, logger: Optional[Any] = None) -> None:
@@ -68,6 +69,18 @@ class HITLNode:
         # Generate a unique review_id that a UI or API can later use
         review_id = f"review_{uuid4().hex}"
 
+        # Persist full HITL review (customer + variants) so it can be fetched later
+        # via GET /hitl/{review_id} and updated by POST /hitl/{review_id}/decision.
+        # We also log it for traceability / debugging.
+        try:
+            review_store.create_review(review_id, customer, variants)
+        except Exception:
+            # If persistence fails, log the error but still return the hitl_payload
+            # so the rest of the flow can proceed.
+            self.logger.exception(
+                "HITLNode: failed to persist review %s to store", review_id
+            )
+
         hitl_payload = {
             "review_id": review_id,
             "status": "pending_human_approval",
@@ -76,9 +89,7 @@ class HITLNode:
             "num_variants": len(variants),
         }
 
-        # In a real system, you might persist (customer + variants)
-        # keyed by review_id in a DB or Redis here.
-        # For now, we only log it so you can see it in the logs.
+        
         self.logger.info(
             "HITLNode: created review job %s for customer %s with %d variants",
             review_id,
