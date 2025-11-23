@@ -12,6 +12,12 @@ from app.store import MemoryStore, store
 from app.graph.langgraph_flow import build_graph
 from services.logger import get_logger
 from app.nodes.segmenter_node import SegmenterNode
+from app.nodes.retriever_node import RetrieverNode
+from app.nodes.generator_node import GeneratorNode
+from app.nodes.safety_node import SafetyNode
+from app.nodes.hitl_node import HITLNode
+from app.nodes.analytics_node import AnalyticsNode
+from services.delivery import send_email_mock
 
 
 logger = get_logger("graph.orchestrator")
@@ -31,12 +37,11 @@ class Orchestrator:
         store_: Optional[MemoryStore] = None,
         logger_=None,
         segmenter: Optional[SegmenterNode] = None,
-        # kept for backward compatibility, but no longer used directly:
-        retriever=None,
-        generator=None,
-        safety=None,
-        hitl=None,
-        analytics=None,
+        retriever: Optional[RetrieverNode] = None,
+        generator: Optional[GeneratorNode] = None,
+        safety: Optional[SafetyNode] = None,
+        hitl: Optional[HITLNode] = None, 
+        analytics: Optional[AnalyticsNode] = None,
     ) -> None:
         # Prefer an explicitly provided store, otherwise fall back to the module-level `store`
         self.store = store_ or store
@@ -44,9 +49,11 @@ class Orchestrator:
 
         # Segmenter can be overridden via FastAPI dependency overrides in tests
         self.segmenter = segmenter or SegmenterNode()
-
-        # Build the LangGraph graph once per orchestrator instance
-        self.graph = build_graph()
+        self.retriever = retriever or RetrieverNode()
+        self.generator = generator or GeneratorNode()
+        self.safety = safety or SafetyNode()
+        self.hitl = hitl or HITLNode() 
+        self.analytics = analytics or AnalyticsNode()
 
     def close(self) -> None:
         """Cleanup resources held by the orchestrator or graph.
@@ -54,14 +61,13 @@ class Orchestrator:
         This is a best-effort hook. If the graph exposes a `close` or
         `shutdown` method it will be called.
         """
-        try:
-            close_fn = getattr(self.graph, "close", None) or getattr(
-                self.graph, "shutdown", None
-            )
-            if callable(close_fn):
-                close_fn()
-        except Exception:
-            logger.exception("error closing graph")
+        for node in (self.segmenter, self.retriever, self.generator, self.safety,self.hitl, self.analytics):
+            try:
+                close_fn = getattr(node, "close", None) or getattr(node, "shutdown", None)
+                if callable(close_fn):
+                    close_fn()
+            except Exception:
+                logger.exception("error closing node %s", type(node).__name__)
 
     async def run_flow(self, flow_name: str, payload: Dict[str, Any]) -> Dict[str, Any]:
         """Run a named flow with the given payload via the LangGraph graph.
@@ -81,55 +87,54 @@ class Orchestrator:
                 f"{key}:flow_started", {"flow": flow_name, "payload": payload}
             )
         except Exception:
-            # best-effort: store is optional and should not break execution
-            logger.exception("failed to persist flow marker")
+            self.logger.exception("failed to persist variants")
 
-        # Compatibility hook: call the injected segmenter and persist its output.
-        # This allows tests to override `get_segmenter` and assert on
-        # store["{id}:segment"].
+        # 4. Safety checks
+        safety_result = self.safety.run(variants)
+        safe_count = len(safety_result.get("safe", [])) if isinstance(safety_result, dict) else 0
+        blocked_count = len(safety_result.get("blocked", [])) if isinstance(safety_result, dict) else 0
+        self.logger.info(f"Safety safe={safe_count} blocked={blocked_count}")
+        
+
+        # 5.  Human-in-the-loop (HITL)
+        hitl_result = None
+        safe_variants = (
+            safety_result.get("safe", []) if isinstance(safety_result, dict) else []
+        )
+        if safe_variants:
+            # HITLNode should accept (customer, safe_variants)
+            hitl_result = self.hitl.run(payload, safe_variants)
+            # Example hitl_result: {"review_id": "...", "status": "pending_human_approval"}
+            self.logger.info(f"HITL: {hitl_result}")
+            try:
+                self.store.set(f"{key}:hitl", hitl_result)
+            except Exception:
+                self.logger.exception("failed to persist hitl result")
+
+        # 6. Analytics / choose winner
+        analysis = self.analytics.run({"variants": safety_result.get("safe", []), "customer": payload}) if isinstance(safety_result, dict) else None
+        winner = analysis.get("winner") if isinstance(analysis, dict) and analysis else None
         try:
             segment_from_node = self.segmenter.run(payload)
             self.logger.info("Segment (node): %s", segment_from_node)
             self.store.set(f"{key}:segment", segment_from_node)
         except Exception:
-            self.logger.exception("failed to run or persist segmenter output")
+            self.logger.exception("failed to persist analysis/winner")
 
-        # Invoke the LangGraph graph with the expected input shape
-        # The graph is expected to work off `{"customer": payload}`
-        self.logger.info("Invoking graph for flow '%s'", flow_name)
-        result_state = await self.graph.ainvoke({"customer": payload}) or {}
+        # 7. Delivery (mock)
+        delivery_result = None
+        if winner and isinstance(safety_result, dict):
+            variant = next((v for v in safety_result.get("safe", []) if v.get("id") == winner.get("variant_id")), None)
+            if variant:
+                delivery_result = send_email_mock(payload.get("email"), variant.get("subject"), variant.get("body"))
 
-        # Extract values from the graph state
-        segment = result_state.get("segment")
-        citations = result_state.get("citations")
-        variants = result_state.get("variants")
-        safety = result_state.get("safety")
-        hitl = result_state.get("hitl")
-        analysis = result_state.get("analysis")
-        delivery = result_state.get("delivery")
-
-        # Persist other pieces of state for inspection/debugging.
-        # NOTE: we intentionally do NOT overwrite "segment" here so tests
-        # that override the segmenter still see their injected value in the store.
-        for field_name, value in [
-            ("citations", citations),
-            ("variants", variants),
-            ("safety", safety),
-            ("hitl", hitl),
-            ("analysis", analysis),
-            ("delivery", delivery),
-        ]:
-            try:
-                self.store.set(f"{key}:{field_name}", value)
-            except Exception:
-                self.logger.exception("failed to persist %s", field_name)
-
-        response: Dict[str, Any] = {
+        
+        response = {
             "segment": segment,
             "citations": citations,
             "variants": variants,
-            "safety": safety,
-            "hitl": hitl,
+            "safety": safety_result,
+            "hitl": hitl_result,
             "analysis": analysis,
             "delivery": delivery,
         }

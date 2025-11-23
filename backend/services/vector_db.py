@@ -20,10 +20,36 @@ import os
 from pathlib import Path
 from typing import List, Dict, Any, Optional
 
-from langchain_openai import AzureOpenAIEmbeddings
-from langchain_community.vectorstores import FAISS
-from langchain_core.documents import Document
-from langchain_community.embeddings import FakeEmbeddings
+# Defer optional heavy imports (langchain, FAISS) until runtime so tests that
+# don't require real embeddings can import this module without installing
+# langchain-related packages.
+AzureOpenAIEmbeddings = None
+FAISS = None
+Document = None
+FakeEmbeddings = None
+try:
+    from langchain_openai import AzureOpenAIEmbeddings  # type: ignore
+except Exception:
+    AzureOpenAIEmbeddings = None
+
+try:
+    from langchain_community.vectorstores import FAISS  # type: ignore
+except Exception:
+    FAISS = None
+
+try:
+    from langchain_core.documents import Document  # type: ignore
+except Exception:
+    # Provide a minimal Document placeholder for typing/runtime when missing
+    class Document:
+        def __init__(self, page_content: str = "", metadata: dict | None = None):
+            self.page_content = page_content
+            self.metadata = metadata or {}
+
+try:
+    from langchain_community.embeddings import FakeEmbeddings  # type: ignore
+except Exception:
+    FakeEmbeddings = None
 
 
 # Default JSONL path (can be overridden by callers)
@@ -31,7 +57,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_JSONL_PATH = PROJECT_ROOT / "data" / "irs_tax_knowledge.jsonl"
 
 # Internal cache
-_VECTORSTORE: Optional[FAISS] = None
+_VECTORSTORE: Optional[Any] = None
 _CORPUS_CACHE: Optional[List[Dict[str, Any]]] = None
 
 
@@ -54,7 +80,20 @@ def get_embedding_model():
             "[vector_db] Azure OpenAI config missing – using FakeEmbeddings for local testing."
         )
         # size can be anything consistent; 1536 is a common embedding dimension
-        return FakeEmbeddings(size=1536)
+        if FakeEmbeddings is not None:
+            return FakeEmbeddings(size=1536)
+        # Minimal in-memory fallback embedding model: returns zero vectors
+        class _ZeroEmbeddings:
+            def __init__(self, size: int = 1536):
+                self.size = size
+
+            def embed_documents(self, docs):
+                return [[0.0] * self.size for _ in docs]
+
+            def embed_query(self, q):
+                return [0.0] * self.size
+
+        return _ZeroEmbeddings(size=1536)
 
     # Real Azure embeddings for production
     return AzureOpenAIEmbeddings(
@@ -88,7 +127,7 @@ def load_corpus(jsonl_path: Optional[str] = None) -> List[Dict[str, Any]]:
     return docs
 
 
-def _build_vectorstore(jsonl_path: Optional[str] = None) -> FAISS:
+def _build_vectorstore(jsonl_path: Optional[str] = None) -> Any:
     """
     Build a FAISS vector store from the JSONL corpus.
 
@@ -111,13 +150,25 @@ def _build_vectorstore(jsonl_path: Optional[str] = None) -> FAISS:
             "source": d.get("source", "corpus"),
         }
         documents.append(Document(page_content=page_content, metadata=metadata))
-
     embeddings = get_embedding_model()
+
+    # If FAISS is not available, provide a lightweight in-memory placeholder
+    if FAISS is None:
+        class _InMemoryVS:
+            def __init__(self, docs):
+                self._docs = docs
+
+            def similarity_search(self, query, k=5):
+                # naive: return first k documents
+                return [Document(page_content=d.get("text", ""), metadata={k: v for k, v in d.items()}) for d in self._docs[:k]]
+
+        return _InMemoryVS(corpus)
+
     vs = FAISS.from_documents(documents, embedding=embeddings)
     return vs
 
 
-def get_vectorstore(jsonl_path: Optional[str] = None) -> FAISS:
+def get_vectorstore(jsonl_path: Optional[str] = None) -> Any:
     """
     Get (or lazily build) the FAISS vector store.
     """

@@ -212,6 +212,17 @@ def safety_check_and_filter(variants: List[Dict[str, Any]]) -> Dict[str, Any]:
           ]
         }
     """
+    # Opt-in instrumentation
+    try:
+        from services.langsmith_monitor import start_run, log_event, finish_run, LANGSMITH_ENABLED
+    except Exception:
+        start_run = log_event = finish_run = lambda *a, **k: None
+        LANGSMITH_ENABLED = False
+
+    run_id = None
+    if LANGSMITH_ENABLED:
+        run_id = start_run("safety_gate.safety_check_and_filter", {"variant_count": len(variants)})
+
     safe: List[Dict[str, Any]] = []
     blocked: List[Dict[str, Any]] = []
 
@@ -240,6 +251,17 @@ def safety_check_and_filter(variants: List[Dict[str, Any]]) -> Dict[str, Any]:
 
     result = {"safe": safe, "blocked": blocked}
     logger.info("safety_check_and_filter: safe=%d blocked=%d", len(safe), len(blocked))
+
+    if run_id:
+        try:
+            log_event(run_id, "safety_result", {"safe": len(safe), "blocked": len(blocked)})
+            finish_run(run_id, status="success", outputs={"safe": len(safe), "blocked": len(blocked)})
+        except Exception:
+            try:
+                finish_run(run_id, status="error", outputs={})
+            except Exception:
+                pass
+
     return result
 
 

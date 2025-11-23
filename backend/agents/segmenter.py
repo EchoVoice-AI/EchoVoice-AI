@@ -25,6 +25,17 @@ def segment_user(customer: dict) -> dict:
     }
     """
 
+    # Opt-in instrumentation (no-op when disabled)
+    try:
+        from services.langsmith_monitor import start_run, log_event, finish_run, LANGSMITH_ENABLED
+    except Exception:
+        start_run = log_event = finish_run = lambda *a, **k: None
+        LANGSMITH_ENABLED = False
+
+    run_id = None
+    if LANGSMITH_ENABLED:
+        run_id = start_run("segmenter.segment_user", {"user_id": customer.get("user_id"), "email": customer.get("email")})
+
     viewed_page = (customer.get("viewed_page") or "").strip().lower()
     form_started = to_bool(customer.get("form_started"))
     scheduled = to_bool(customer.get("scheduled"))
@@ -65,7 +76,7 @@ def segment_user(customer: dict) -> dict:
     segment_label = f"{use_case}:{funnel_stage}"
     reasons.insert(0, f"interested in: {use_case_label}")
 
-    return {
+    result = {
         "segment": segment_label,
         "use_case": use_case,
         "use_case_label": use_case_label,
@@ -73,6 +84,18 @@ def segment_user(customer: dict) -> dict:
         "intent_level": intent_level,
         "reasons": reasons,
     }
+
+    if run_id:
+        try:
+            log_event(run_id, "segment_computed", {"segment": segment_label, "intent_level": intent_level})
+            finish_run(run_id, status="success", outputs={"segment": segment_label})
+        except Exception:
+            try:
+                finish_run(run_id, status="error", outputs={})
+            except Exception:
+                pass
+
+    return result
 
 
 def load_customers_from_csv(csv_path: str):

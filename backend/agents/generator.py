@@ -37,9 +37,33 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional
 
-from langchain_core.documents import Document  # for downstream typing only
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
+try:
+    from langchain_core.documents import Document  # for downstream typing only
+except Exception:
+    # Minimal placeholder for tests when langchain_core isn't installed
+    class Document:
+        def __init__(self, page_content: str = "", metadata: dict | None = None):
+            self.page_content = page_content
+            self.metadata = metadata or {}
+
+try:
+    from langchain_openai import AzureChatOpenAI, ChatOpenAI
+except Exception:
+    AzureChatOpenAI = None
+    ChatOpenAI = None
+
+try:
+    from langchain_core.messages import SystemMessage, HumanMessage
+except Exception:
+    # Simple message placeholders used only for LLM path; safe to stub when not installed
+    class SystemMessage:
+        def __init__(self, content: str):
+            self.content = content
+
+    class HumanMessage:
+        def __init__(self, content: str):
+            self.content = content
+from services.langsmith_monitor import start_run, log_event, finish_run, LANGSMITH_ENABLED
 
 # IMPORTANT: adjust this import path if your config module lives elsewhere.
 # You said "app/config.py", so we import from app.config.
@@ -395,13 +419,32 @@ def generate_variants(
 
     This keeps your pipeline testable locally even without secrets.
     """
-    # 1) Try LLM path
-    variants = _generate_with_llm(customer, segment, citations)
-    if variants is not None:
+    run_id = None
+    # Before generating variants, starts a LangSmith run
+    if LANGSMITH_ENABLED:
+        run_id = start_run("generator.generate_variants", {"agent": "generator", "customer_id": customer.get("id"), "use_case": segment.get("use_case")})
+
+    try:
+        # 1) Try LLM path
+        variants = _generate_with_llm(customer, segment, citations)
+        if variants is not None:
+            if run_id:
+                log_event(run_id, "generated_variants", {"count": len(variants)})
+                finish_run(run_id, status="success", outputs={"count": len(variants)})
+            return variants
+
+        # 2) Fallback path (no LLM or error)
+        variants = _fallback_template_variants(customer, segment, citations)
+        if run_id:
+            log_event(run_id, "fallback_variants", {"count": len(variants)})
+            finish_run(run_id, status="success", outputs={"count": len(variants), "generator": "template_fallback"})
         return variants
 
-    # 2) Fallback path (no LLM or error)
-    return _fallback_template_variants(customer, segment, citations)
+    except Exception as e:
+        if run_id:
+            log_event(run_id, "error", {"error": str(e)})
+            finish_run(run_id, status="error", outputs={"error": str(e)})
+        raise
 
 
 # ---------------------------------------------------------------------
