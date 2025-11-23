@@ -34,7 +34,6 @@ def get_generator() -> GeneratorNode:
 
 def get_safety() -> SafetyNode:
     return SafetyNode()
-
 def get_hitl() -> HITLNode:
     return HITLNode()
 
