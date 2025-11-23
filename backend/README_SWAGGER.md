@@ -9,7 +9,7 @@ What it does
 Files
 - `run_swagger_light.py` — lightweight runner added to the `backend/` folder.
 
-Run locally (recommended)
+## Run locally (recommended)
 1. Change to the `backend/` folder:
 
 ```bash
