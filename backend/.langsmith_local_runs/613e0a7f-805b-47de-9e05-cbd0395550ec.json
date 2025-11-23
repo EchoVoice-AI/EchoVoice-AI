@@ -1,0 +1,24 @@
+{
+  "id": "613e0a7f-805b-47de-9e05-cbd0395550ec",
+  "name": "segmenter.segment_user",
+  "metadata": {
+    "user_id": null,
+    "email": null
+  },
+  "start_time": 1763870955.644398,
+  "events": [
+    {
+      "time": 1763870955.644537,
+      "name": "segment_computed",
+      "payload": {
+        "segment": "pricing:StartedFormOrFlow",
+        "intent_level": "medium"
+      }
+    }
+  ],
+  "end_time": 1763870955.6446521,
+  "status": "success",
+  "outputs": {
+    "segment": "pricing:StartedFormOrFlow"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "22607bd0-0eec-411d-b545-c0c08fd54304",
+  "name": "segmenter.segment_user",
+  "metadata": {
+    "email": "ph@example.com",
+    "customer_id_hash": "sha256:273f19681b7b9cfd0a8167ef51b62e8913426f438a0056acd8014e7162b22097",
+    "pseudonymization": {
+      "method": "sha256",
+      "secret_present": false
+    }
+  },
+  "start_time": 1763870955.633086,
+  "events": [
+    {
+      "time": 1763870955.6333299,
+      "name": "segment_computed",
+      "payload": {
+        "segment": "unknown:BrowsingOnly",
+        "intent_level": "low"
+      }
+    }
+  ],
+  "end_time": 1763870955.633491,
+  "status": "success",
+  "outputs": {
+    "segment": "unknown:BrowsingOnly"
+  }
+}
