@@ -1,0 +1,13 @@
+{
+  "id": "51eb0eba-9f1e-45f7-ab91-99a00cd9abdc",
+  "name": "segmenter.segment_user",
+  "metadata": {
+    "customer_id_hash": "sha256:2a5ad226ff7be23dc12f0745cec9e7e12da2458302dc669faebde99ac998315f",
+    "pseudonymization": {
+      "method": "sha256",
+      "secret_present": false
+    }
+  },
+  "start_time": 1763870955.625807,
+  "events": []
+}

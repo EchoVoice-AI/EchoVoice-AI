@@ -59,6 +59,40 @@ Next steps
 - Optionally wire the wrapper to the real `langsmith` SDK when team is ready.
 - Decide a naming convention for run names and metadata, and extend the wrapper to include team-specific fields.
 
+Debug UI (development only)
+----------------------------
+This repository includes a small developer-only debug UI that helps visualize and
+exercise the LangGraph used by the app. The endpoints are intentionally gated so
+they are not available in production runs.
+
+Endpoints (use only in local/dev):
+- `GET /debug/graph` — returns a compact JSON description of the graph (nodes,
+  edges and a Mermaid diagram string).
+- `GET /debug/graph/view` — a tiny HTML viewer that fetches `/debug/graph`
+  client-side and renders the Mermaid diagram in the browser (avoids server-side
+  JS interpolation issues).
+- `POST /debug/run` — invokes a local LangGraph smoke run and returns the
+  `final_state` JSON. Use this only in safe, local environments.
+
+Enable the debug UI
+-------------------
+Set the environment variable `ENABLE_DEBUG_UI=1` before starting the backend to
+enable these routes. When not set (default) the endpoints return 404.
+
+Example (local):
+
+```bash
+export PYTHONPATH=backend
+export ENABLE_DEBUG_UI=1
+backend/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8002 --reload
+```
+
+CI note
+-------
+The integration test `backend/tests/test_debug_graph.py` exercises these debug
+endpoints and the smoke-run. The test is included in CI so changes to the graph
+or debug router will be validated automatically. See `.github/workflows/ci.yml`.
+
 Notes
 - The wrapper is intentionally minimal to avoid adding runtime risks. It writes local JSON files when enabled and the SDK is not installed.
 LangSmith integration (opt-in)
