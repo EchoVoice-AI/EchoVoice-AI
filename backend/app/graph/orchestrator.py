@@ -89,46 +89,51 @@ class Orchestrator:
         except Exception:
             self.logger.exception("failed to persist variants")
 
-        # 4. Safety checks
-        safety_result = self.safety.run(variants)
-        safe_count = len(safety_result.get("safe", [])) if isinstance(safety_result, dict) else 0
-        blocked_count = len(safety_result.get("blocked", [])) if isinstance(safety_result, dict) else 0
-        self.logger.info(f"Safety safe={safe_count} blocked={blocked_count}")
-        
-
-        # 5.  Human-in-the-loop (HITL)
-        hitl_result = None
-        safe_variants = (
-            safety_result.get("safe", []) if isinstance(safety_result, dict) else []
-        )
-        if safe_variants:
-            # HITLNode should accept (customer, safe_variants)
-            hitl_result = self.hitl.run(payload, safe_variants)
-            # Example hitl_result: {"review_id": "...", "status": "pending_human_approval"}
-            self.logger.info(f"HITL: {hitl_result}")
-            try:
-                self.store.set(f"{key}:hitl", hitl_result)
-            except Exception:
-                self.logger.exception("failed to persist hitl result")
-
-        # 6. Analytics / choose winner
-        analysis = self.analytics.run({"variants": safety_result.get("safe", []), "customer": payload}) if isinstance(safety_result, dict) else None
-        winner = analysis.get("winner") if isinstance(analysis, dict) and analysis else None
+        # Build and invoke the LangGraph flow to get a final state dict.
         try:
-            segment_from_node = self.segmenter.run(payload)
-            self.logger.info("Segment (node): %s", segment_from_node)
-            self.store.set(f"{key}:segment", segment_from_node)
+            graph = build_graph()
+            final_state = graph.invoke({"customer": payload})
         except Exception:
-            self.logger.exception("failed to persist analysis/winner")
+            self.logger.exception("failed to invoke LangGraph flow")
+            final_state = {}
 
-        # 7. Delivery (mock)
-        delivery_result = None
-        if winner and isinstance(safety_result, dict):
-            variant = next((v for v in safety_result.get("safe", []) if v.get("id") == winner.get("variant_id")), None)
-            if variant:
-                delivery_result = send_email_mock(payload.get("email"), variant.get("subject"), variant.get("body"))
+        # Extract expected fields from the final state with safe fallbacks.
+        segment = final_state.get("segment")
+        citations = final_state.get("citations")
+        variants = final_state.get("variants")
+        safety_result = final_state.get("safety") or {}
+        hitl_result = final_state.get("hitl")
+        analysis = final_state.get("analysis")
+        delivery_result = final_state.get("delivery")
 
-        
+        # Log safety summary if present
+        if isinstance(safety_result, dict):
+            safe_count = len(safety_result.get("safe", []))
+            blocked_count = len(safety_result.get("blocked", []))
+            self.logger.info(f"Safety safe={safe_count} blocked={blocked_count}")
+
+        # Persist transient results (best-effort)
+        try:
+            if segment is not None:
+                # Allow an injected/overridden segmenter (useful in tests)
+                try:
+                    segment_from_node = self.segmenter.run(payload)
+                    segment = segment_from_node
+                except Exception:
+                    # Fall back to the segment computed by the graph
+                    pass
+                self.store.set(f"{key}:segment", segment)
+            if citations is not None:
+                self.store.set(f"{key}:citations", citations)
+            if variants is not None:
+                self.store.set(f"{key}:variants", variants)
+            if hitl_result is not None:
+                self.store.set(f"{key}:hitl", hitl_result)
+            if analysis is not None:
+                self.store.set(f"{key}:analysis", analysis)
+        except Exception:
+            self.logger.exception("failed to persist transient state")
+
         response = {
             "segment": segment,
             "citations": citations,
@@ -136,7 +141,7 @@ class Orchestrator:
             "safety": safety_result,
             "hitl": hitl_result,
             "analysis": analysis,
-            "delivery": delivery,
+            "delivery": delivery_result,
         }
 
         self.logger.info("Orchestrator.run_flow completed: %s", flow_name)
