@@ -14,11 +14,15 @@ import json
 import os
 import time
 import uuid
+import hashlib
+import hmac
 from pathlib import Path
 from typing import Any, Dict, Optional
 
 LANGSMITH_API_KEY = os.getenv("LANGSMITH_API_KEY")
 LANGSMITH_ENABLED = bool(os.getenv("LANGSMITH_ENABLED") == "1" or LANGSMITH_API_KEY)
+# Optional secret for deterministic pseudonymization (HMAC-SHA256). Keep this out of source control.
+LANGSMITH_HMAC_SECRET = os.getenv("LANGSMITH_HMAC_SECRET")
 
 # Try to import the real langsmith SDK if available. We don't require it.
 HAS_SDK = False
@@ -48,6 +52,26 @@ def start_run(name: str, metadata: Optional[Dict[str, Any]] = None) -> str:
     """
     run_id = str(uuid.uuid4())
     metadata = metadata or {}
+
+    # Pseudonymize known identifier keys to avoid writing raw PII.
+    # We look for common keys and replace them with a deterministic hash.
+    id_keys = ["customer_id", "user_id", "customer"]
+    for k in list(metadata.keys()):
+        if k in id_keys and isinstance(metadata.get(k), str):
+            raw = metadata.pop(k)
+            secret = LANGSMITH_HMAC_SECRET
+            if secret:
+                digest = hmac.new(secret.encode("utf-8"), raw.encode("utf-8"), hashlib.sha256).hexdigest()
+                method = "hmac-sha256"
+            else:
+                # Fallback to plain sha256 if no secret is available. Still non-reversible.
+                digest = hashlib.sha256(raw.encode("utf-8")).hexdigest()
+                method = "sha256"
+
+            metadata["customer_id_hash"] = f"sha256:{digest}"
+            metadata.setdefault("pseudonymization", {})["method"] = method
+            metadata.setdefault("pseudonymization", {})["secret_present"] = bool(secret)
+
     record = {
         "id": run_id,
         "name": name,

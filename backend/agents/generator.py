@@ -397,6 +397,7 @@ def generate_variants(
     This keeps your pipeline testable locally even without secrets.
     """
     run_id = None
+    # Before generating variants, starts a LangSmith run
     if LANGSMITH_ENABLED:
         run_id = start_run("generator.generate_variants", {"agent": "generator", "customer_id": customer.get("id"), "use_case": segment.get("use_case")})
 
