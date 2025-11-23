@@ -1,0 +1,26 @@
+name: Delivery CI
+
+on:
+  push:
+    branches: [ feature/delivery-agent, assignment-agent ]
+  pull_request:
+    branches: [ develop ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r backend/requirements.txt || true
+      - name: Run tests
+        env:
+          PYTHONPATH: backend
+        run: |
+          pytest -q backend/tests/test_delivery_agent.py backend/tests/test_langgraph_delivery.py

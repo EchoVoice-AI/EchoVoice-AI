@@ -7,6 +7,7 @@ from app.nodes.retriever_node import RetrieverNode
 from app.nodes.generator_node import GeneratorNode
 from app.nodes.safety_node import SafetyNode
 from app.nodes.assignment_node import AssignmentNode
+from app.nodes.delivery_node import DeliveryNode
 from app.nodes.analytics_node import AnalyticsNode
 from app.nodes.hitl_node import HITLNode  
 from services.delivery import send_email_mock
@@ -172,12 +173,9 @@ def delivery_node(state: FlowState) -> FlowState:
         state["delivery"] = None
         return state
 
-    # Use the mock delivery service
-    email = state["customer"].get("email")
-    subject = variant.get("subject")
-    body = variant.get("body")
-
-    delivery_result = send_email_mock(email, subject, body)
+    # Use the DeliveryNode adapter
+    delivery_input = {"customer": state["customer"], "variant": variant}
+    delivery_result = DeliveryNode().run(delivery_input)
     state["delivery"] = delivery_result
     return state
 
