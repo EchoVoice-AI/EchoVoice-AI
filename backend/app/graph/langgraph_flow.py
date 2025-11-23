@@ -6,6 +6,7 @@ from app.nodes.segmenter_node import SegmenterNode
 from app.nodes.retriever_node import RetrieverNode
 from app.nodes.generator_node import GeneratorNode
 from app.nodes.safety_node import SafetyNode
+from app.nodes.assignment_node import AssignmentNode
 from app.nodes.analytics_node import AnalyticsNode
 from app.nodes.hitl_node import HITLNode  
 from services.delivery import send_email_mock
@@ -20,6 +21,7 @@ class FlowState(TypedDict, total=False):
     citations: List[Dict[str, Any]]
     variants: List[Dict[str, Any]]
     safety: Dict[str, Any]
+    assignment: Dict[str, Any]
     hitl: Dict[str, Any]
     analysis: Dict[str, Any]
     delivery: Dict[str, Any]
@@ -79,6 +81,26 @@ def safety_node(state: FlowState) -> FlowState:
     """
     safety_result = SafetyNode().run(state["variants"])
     state["safety"] = safety_result
+    return state
+
+
+def assignment_node(state: FlowState) -> FlowState:
+    """
+    Assign the customer to an experiment variant deterministically.
+    Stores the assignment under state['assignment'] and leaves other
+    state values intact.
+    """
+    customer = state.get("customer") or {}
+    experiment_id = customer.get("experiment_id") or customer.get("exp_id") or "exp_default"
+
+    assignment_input = {
+        "user_id": customer.get("id"),
+        "experiment_id": experiment_id,
+        "context": {"segment": state.get("segment")},
+    }
+
+    assignment = AssignmentNode().run(assignment_input)
+    state["assignment"] = assignment
     return state
 
 
@@ -179,6 +201,7 @@ def build_graph():
     graph.add_node("segmenter", segmenter_node)
     graph.add_node("retriever", retriever_node)
     graph.add_node("generator", generator_node)
+    graph.add_node("assignment", assignment_node)
     graph.add_node("safety", safety_node)
     graph.add_node("hitl", hitl_node)
     graph.add_node("analytics", analytics_node)
@@ -188,7 +211,8 @@ def build_graph():
     graph.set_entry_point("segmenter")
     graph.add_edge("segmenter", "retriever")
     graph.add_edge("retriever", "generator")
-    graph.add_edge("generator", "safety")
+    graph.add_edge("generator", "assignment")
+    graph.add_edge("assignment", "safety")
     graph.add_edge("safety", "hitl")
     graph.add_edge("hitl", "analytics")
     graph.add_edge("analytics", "delivery")
