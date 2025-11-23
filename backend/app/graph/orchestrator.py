@@ -40,7 +40,7 @@ class Orchestrator:
         retriever: Optional[RetrieverNode] = None,
         generator: Optional[GeneratorNode] = None,
         safety: Optional[SafetyNode] = None,
-        hitl: Optional[HITLNode] = None, 
+        hitl: Optional[HITLNode] = None,
         analytics: Optional[AnalyticsNode] = None,
     ) -> None:
         # Prefer an explicitly provided store, otherwise fall back to the module-level `store`
