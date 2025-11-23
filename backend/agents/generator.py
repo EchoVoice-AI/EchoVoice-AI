@@ -37,9 +37,32 @@ from __future__ import annotations
 import json
 from typing import Any, Dict, List, Optional
 
-from langchain_core.documents import Document  # for downstream typing only
-from langchain_openai import AzureChatOpenAI, ChatOpenAI
-from langchain_core.messages import SystemMessage, HumanMessage
+try:
+    from langchain_core.documents import Document  # for downstream typing only
+except Exception:
+    # Minimal placeholder for tests when langchain_core isn't installed
+    class Document:
+        def __init__(self, page_content: str = "", metadata: dict | None = None):
+            self.page_content = page_content
+            self.metadata = metadata or {}
+
+try:
+    from langchain_openai import AzureChatOpenAI, ChatOpenAI
+except Exception:
+    AzureChatOpenAI = None
+    ChatOpenAI = None
+
+try:
+    from langchain_core.messages import SystemMessage, HumanMessage
+except Exception:
+    # Simple message placeholders used only for LLM path; safe to stub when not installed
+    class SystemMessage:
+        def __init__(self, content: str):
+            self.content = content
+
+    class HumanMessage:
+        def __init__(self, content: str):
+            self.content = content
 from services.langsmith_monitor import start_run, log_event, finish_run, LANGSMITH_ENABLED
 
 # IMPORTANT: adjust this import path if your config module lives elsewhere.
