@@ -1,7 +1,6 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
-from typing import AsyncGenerator
+from typing import Optional, Dict, Any, AsyncGenerator
 
 from services.logger import get_logger
 from app.store import MemoryStore, store
@@ -18,11 +17,10 @@ logger = get_logger("orchestrator")
 
 
 def get_store() -> MemoryStore:
-    """FastAPI dependency returning the global memory store singleton."""
+    """Return the global in-memory store singleton."""
     return store
-
-
 def get_segmenter() -> SegmenterNode:
+    """Default segmenter provider (can be overridden in tests)."""
     return SegmenterNode()
 
 
@@ -56,8 +54,8 @@ async def get_orchestrator(
     ) -> AsyncGenerator[Orchestrator, None]:
     """FastAPI dependency returning a per-request Orchestrator instance.
 
-    This constructs an Orchestrator per request using node instances
-    provided by DI so tests can override node providers individually.
+    The Orchestrator delegates flow execution to the LangGraph graph.
+    We ensure resources are cleaned up at the end of the request.
     """
     orch = Orchestrator(
         store_=store,
@@ -88,7 +86,7 @@ class CustomerModel(BaseModel):
         example={
             "form_started": "yes",
             "scheduled": "no",
-            "attended": "no"
+            "attended": "no",
         },
     )
 
@@ -98,12 +96,14 @@ class OrchestrateRequest(BaseModel):
 
 
 @router.post("/orchestrate")
-async def orchestrate(payload: OrchestrateRequest, orchestrator: Orchestrator = Depends(get_orchestrator)):
-    # Use Pydantic v2 model_dump for compatibility with newer versions
+async def orchestrate(
+    payload: OrchestrateRequest,
+    orchestrator: Orchestrator = Depends(get_orchestrator),
+):
+    """Run the personalization flow for a given customer."""
     customer = payload.customer.model_dump()
     if not customer:
         raise HTTPException(status_code=400, detail="customer missing")
 
-    # Delegate orchestration to the Orchestrator service
     result = await orchestrator.run_flow("default_personalization", customer)
     return result
