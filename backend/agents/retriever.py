@@ -126,6 +126,12 @@ def retrieve_citations(
     Retrieve top_k relevant citations based on the segment_result.
     Tries Azure Search first, falls back to FAISS if Azure Search fails or is unavailable.
     """
+    from services.langsmith_monitor import start_run, log_event, finish_run, LANGSMITH_ENABLED
+
+    run_id = None
+    if LANGSMITH_ENABLED:
+        run_id = start_run("retriever.retrieve_citations", {"agent": "retriever", "top_k": top_k})
+
     query = build_query_from_segment(segment_result)
     path = jsonl_path or str(DEFAULT_JSONL_PATH)
 
@@ -149,18 +155,30 @@ def retrieve_citations(
         original_text = doc.page_content or ""
         redacted = redact_pii(original_text)
 
-        citations.append(
-            {
-                "id": meta.get("id"),
-                "title": meta.get("title"),
-                "section": meta.get("section"),
-                "text": original_text,
-                "redacted_text": redacted,
-                "url": meta.get("url"),
-                "published_date": meta.get("published_date"),
-                "source": meta.get("source", "corpus"),
-            }
-        )
+        citation = {
+            "id": meta.get("id"),
+            "title": meta.get("title"),
+            "section": meta.get("section"),
+            "text": original_text,
+            "redacted_text": redacted,
+            "url": meta.get("url"),
+            "published_date": meta.get("published_date"),
+            "source": meta.get("source", "corpus"),
+        }
+        citations.append(citation)
+
+    if run_id:
+        try:
+            # Record the query and number of citations
+            log_event(run_id, "query", {"query": query, "top_k": top_k})
+            log_event(run_id, "citations_returned", {"count": len(citations)})
+            finish_run(run_id, status="success", outputs={"count": len(citations)})
+        except Exception:
+            # Do not let monitoring errors break retrieval
+            try:
+                finish_run(run_id, status="error", outputs={})
+            except Exception:
+                pass
 
     return citations
 

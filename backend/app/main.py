@@ -5,7 +5,7 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import uvicorn
 
-from services.logger import get_logger
+from ..services.logger import get_logger
 from .routers.health import router as health_router
 from .routers.orchestrator import router as orchestrator_router
 
