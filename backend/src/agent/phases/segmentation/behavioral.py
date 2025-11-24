@@ -1,10 +1,13 @@
 """Behavioral segmentation node (explainable template)."""
+
 from __future__ import annotations
 
 import logging
 from typing import Any, Dict
 
-from agent.state import GraphState
+from langgraph.runtime import Runtime
+
+from agent.state import Context, GraphState
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +22,16 @@ def behavioral_segmenter(state: GraphState) -> Dict[str, Any]:
         "No escalation or special handling required; apply standard content tuning."
     )
 
-    logger.info("Behavioral segmentation complete: %s (%.2f)", segment_label, confidence_score)
+    logger.info(
+        "Behavioral segmentation complete: %s (%.2f)", segment_label, confidence_score
+    )
 
     return {
-        "raw_segmentation_data": {
-            segment_type: {
-                "label": segment_label,
-                "confidence": confidence_score,
-                "justification": justification,
-            }
+        "behavioral_segment_output": {  # <--- UNIQUE KEY FOR BEHAVIORAL
+            "segment_type": segment_type,
+            "label": segment_label,
+            "confidence": confidence_score,
+            "justification": justification,
         }
     }
 
@@ -50,3 +54,9 @@ def segment_behavioral(context: Dict[str, Any]) -> Dict[str, Any]:
     }
     return behavioral_segmenter(fake_state)
 
+
+async def behavioral_segmentor_node(
+    state: GraphState, runtime: Runtime[Context]
+) -> Dict[str, Any]:
+    """Produce behavioral segmentation."""
+    return behavioral_segmenter(state)

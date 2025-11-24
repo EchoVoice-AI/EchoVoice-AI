@@ -7,7 +7,9 @@ PROFILE_SEGMENTATION (fallback).
 """
 
 import logging
-from typing import Literal
+from typing import Any, Dict, Literal
+
+from langgraph.runtime import Runtime
 
 from agent.state import GraphState
 
@@ -37,23 +39,20 @@ def goal_router(state: GraphState) -> Literal[
     # --- Rule-Based Routing Logic (Mirroring the Diagram) ---
 
     # 1. RFM (Recency, Frequency, Monetary) Segmentation
-    if "churn" in campaign_goal or "retention" in campaign_goal or "loyalty" in campaign_goal:
+    if any(term in campaign_goal for term in ["churn", "retention", "loyalty"]):
         logger.info("Routing to RFM Segmentation (campaign_goal=%s)", campaign_goal)
-        return "RFM_SEGMENTATION"
+        return "rfm"
 
     # 2. INTENT Segmentation (conversational signals)
-    if user_message and ("ask" in user_message or "?" in user_message or "tell me about" in user_message):
+    if user_message and any(term in user_message for term in ["?", "ask", "tell me about"]):
         logger.info("Routing to INTENT Segmentation (user_message=%s)", user_message)
-        return "INTENT_SEGMENTATION"
+        return "intent"
 
     # 3. BEHAVIORAL Segmentation
-    if "engagement" in campaign_goal or "real-time" in campaign_goal or "activity" in campaign_goal:
+    if any(term in campaign_goal for term in ["engagement", "real-time", "activity"]):
         logger.info("Routing to BEHAVIORAL Segmentation (campaign_goal=%s)", campaign_goal)
-        return "BEHAVIORAL_SEGMENTATION"
+        return "behavioral"
 
     # 4. PROFILE Segmentation (Default/Fallback)
     logger.info("Routing to PROFILE Segmentation (default)")
-    return "PROFILE_SEGMENTATION"
-
-
-# Note: These return values are the node IDs used when defining conditional edges in app.py.
+    return "profile"

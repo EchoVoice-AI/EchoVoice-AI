@@ -4,7 +4,9 @@ from __future__ import annotations
 import logging
 from typing import Any, Dict
 
-from agent.state import GraphState
+from langgraph.runtime import Runtime
+
+from agent.state import Context, GraphState
 
 logger = logging.getLogger(__name__)
 
@@ -22,12 +24,11 @@ def profile_segmenter(state: GraphState) -> Dict[str, Any]:
     logger.info("Profile segmentation complete: %s (%.2f)", segment_label, confidence_score)
 
     return {
-        "raw_segmentation_data": {
-            segment_type: {
-                "label": segment_label,
-                "confidence": confidence_score,
-                "justification": justification,
-            }
+        "profile_segment_output": { # <--- UNIQUE KEY FOR PROFILE
+            "segment_type": segment_type,
+            "label": segment_label,
+            "confidence": confidence_score,
+            "justification": justification,
         }
     }
 
@@ -63,3 +64,6 @@ def segment_profile(context: Dict[str, Any]) -> Dict[str, Any]:
     }
     return profile_segmenter(fake_state)
 
+async def profile_segmentor_node(state: GraphState, runtime: Runtime[Context]) -> Dict[str, Any]:
+    """Async wrapper for profile_segmenter to fit graph node signature."""
+    return profile_segmenter(state)
