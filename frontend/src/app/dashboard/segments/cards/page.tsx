@@ -2,12 +2,11 @@ import type { Metadata } from 'next';
 
 import { CONFIG } from 'src/global-config';
 
-import { UserCardsView } from 'src/sections/user/view';
+import { SegmentorCardsView } from 'src/sections/segment/view';
 
 // ----------------------------------------------------------------------
 
-export const metadata: Metadata = { title: `User cards | Dashboard - ${CONFIG.appName}` };
-
+export const metadata: Metadata = { title: `Segmentors | Dashboard - ${CONFIG.appName}` };
 export default function Page() {
-  return <UserCardsView />;
+  return <SegmentorCardsView />;
 }

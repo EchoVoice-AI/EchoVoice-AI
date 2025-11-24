@@ -1,99 +1,28 @@
-import type { IDateValue, ISocialLink } from './common';
 
 // ----------------------------------------------------------------------
 
-export type IUserTableFilters = {
+// Types for the segment editor UI. These mirror the backend Pydantic
+// models in `backend/api/schemas.py` so the frontend and backend agree
+// on payload shapes used by the REST API.
+
+export type Segment = {
+  id: string;
   name: string;
-  role: string[];
-  status: string;
+  enabled: boolean; // backend default: true
+  priority: number; // >= 0, backend default: 1.0
+  metadata: Record<string, any>;
 };
 
-export type IUserProfileCover = {
+export type SegmentUpdate = {
+  enabled?: boolean | null;
+  priority?: number | null;
+  metadata?: Record<string, any> | null;
+};
+
+export type ISegmentorCard = {
+  id: string;
   name: string;
-  role: string;
+  avatarUrl: string;
   coverUrl: string;
-  avatarUrl: string;
-};
-
-export type IUserProfile = {
-  id: string;
-  role: string;
-  quote: string;
-  email: string;
-  school: string;
-  country: string;
-  company: string;
-  totalFollowers: number;
-  totalFollowing: number;
-  socialLinks: ISocialLink;
-};
-
-export type IUserProfileFollower = {
-  id: string;
-  name: string;
-  country: string;
-  avatarUrl: string;
-};
-
-export type IUserProfileGallery = {
-  id: string;
-  title: string;
-  imageUrl: string;
-  postedAt: IDateValue;
-};
-
-export type IUserProfileFriend = {
-  id: string;
-  name: string;
-  role: string;
-  avatarUrl: string;
-};
-
-export type IUserProfilePost = {
-  id: string;
-  media: string;
-  message: string;
-  createdAt: IDateValue;
-  personLikes: { name: string; avatarUrl: string }[];
-  comments: {
-    id: string;
-    message: string;
-    createdAt: IDateValue;
-    author: { id: string; name: string; avatarUrl: string };
-  }[];
-};
-
-export type IUserCard = {
-  id: string;
-  name: string;
-  role: string;
-  coverUrl: string;
-  avatarUrl: string;
-  totalPosts: number;
-  totalFollowers: number;
-  totalFollowing: number;
-};
-
-export type IUserItem = {
-  id: string;
-  name: string;
-  city: string;
-  role: string;
-  email: string;
-  state: string;
-  status: string;
-  address: string;
-  country: string;
-  zipCode: string;
-  company: string;
-  avatarUrl: string;
-  phoneNumber: string;
-  isVerified: boolean;
-};
-
-export type IUserAccountBillingHistory = {
-  id: string;
-  price: number;
-  invoiceNumber: string;
-  createdAt: IDateValue;
+  enabled?: boolean | null;
 };

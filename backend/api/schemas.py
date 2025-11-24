@@ -35,9 +35,9 @@ class SegmentUpdate(BaseModel):
     Any field may be omitted; only provided fields are applied.
     """
 
-    enabled: Optional[bool]
-    priority: Optional[float]
-    metadata: Optional[Dict[str, Any]]
+    enabled: bool | None
+    priority: float | None
+    metadata: Dict[str, Any] | None
 
 
 class GraphSummary(BaseModel):

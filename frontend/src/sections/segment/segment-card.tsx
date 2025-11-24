@@ -1,5 +1,5 @@
-import type { IUserCard } from 'src/types/user';
 import type { CardProps } from '@mui/material/Card';
+import type { ISegmentorCard } from 'src/types/segmentor';
 
 import { varAlpha } from 'minimal-shared/utils';
 
@@ -21,7 +21,7 @@ import { Image } from 'src/components/image';
 // ----------------------------------------------------------------------
 
 type Props = CardProps & {
-  user: IUserCard;
+  user: ISegmentorCard;
 };
 
 export function SegmentorCard({ user, sx, ...other }: Props) {

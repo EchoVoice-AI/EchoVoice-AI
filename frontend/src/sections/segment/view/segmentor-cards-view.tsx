@@ -11,15 +11,15 @@ import { DashboardContent } from 'src/layouts/dashboard';
 import { Iconify } from 'src/components/iconify';
 import { CustomBreadcrumbs } from 'src/components/custom-breadcrumbs';
 
-;
+import { SegmentorCardList } from '../segmentor-card-list';
 
 // ----------------------------------------------------------------------
 
-export function UserCardsView() {
+export function SegmentorCardsView() {
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading="User cards"
+        heading="Segmentor cards"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
           { name: 'User', href: paths.dashboard.user.root },
@@ -38,7 +38,7 @@ export function UserCardsView() {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      {/* <UserCardList users={_userCards} /> */}
+      {/* <SegmentorCardList segmentors={_segmentors} /> */}
     </DashboardContent>
   );
 }
