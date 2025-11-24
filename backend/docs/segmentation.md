@@ -1,6 +1,6 @@
 # **Step 1 — Overview / Introduction**
 
-### Original excerpt
+## Original excerpt
 
 > The Segmentation Phase is the entry point of the entire system.
 > Its purpose is to classify incoming user context into the most relevant analytical “segment” before any generation, compliance, or experimentation logic runs.
@@ -96,14 +96,14 @@ To add a new segmentation engine:
 
 ---
 
-# **Step 2 — Flow Breakdown & Goal Router**
+## **Step 2 — Flow Breakdown & Goal Router**
 
 ### Overview
 
 The **Goal Router** is a lightweight, deterministic node in the Segmentation Phase. It decides **which segmentation engine** should handle a given user message based on:
 
-* `campaign_goal` signals (e.g., retention, churn, engagement)
-* `user_message` content (questions, requests, or instructions)
+- `campaign_goal` signals (e.g., retention, churn, engagement)
+- `user_message` content (questions, requests, or instructions)
 
 The router ensures that each input is handled by the most relevant segmentation logic, and the output of this router becomes the **initial routing context** for downstream nodes.
 
@@ -126,21 +126,21 @@ The router uses **strict priority rules**:
 
 1. **RFM Segmentation**
 
-   * Matches if `campaign_goal` contains: `"churn"`, `"retention"`, or `"loyalty"`.
-   * **Highest priority**: campaign goal dominates over user message.
+   - Matches if `campaign_goal` contains: `"churn"`, `"retention"`, or `"loyalty"`.
+   - **Highest priority**: campaign goal dominates over user message.
 
 2. **Intent Segmentation**
 
-   * Matches if `user_message` contains: `"ask"`, `"?"`, `"tell me about"`.
-   * Used when **user queries** are detected and RFM doesn’t match.
+   - Matches if `user_message` contains: `"ask"`, `"?"`, `"tell me about"`.
+   - Used when **user queries** are detected and RFM doesn’t match.
 
 3. **Behavioral Segmentation**
 
-   * Matches if `campaign_goal` mentions: `"engagement"`, `"real-time"`, `"activity"`.
+   - Matches if `campaign_goal` mentions: `"engagement"`, `"real-time"`, `"activity"`.
 
 4. **Profile Segmentation (Fallback)**
 
-   * Default route when none of the above conditions match.
+   - Default route when none of the above conditions match.
 
 > The router’s decision is returned as a **node key**, which LangGraph uses to branch into the correct segmentation engine.
 
@@ -164,15 +164,14 @@ print(selected_node)
 
 ### ✅ Key Notes
 
-* The router is **deterministic**: same input → same node.
-* It produces `_selected_segment` in the graph state for later priority computation.
-* Even if multiple signals apply (e.g., campaign + question), **priority rules** determine the final route.
-* This enables downstream nodes (priority assignment, message generation) to consume segmentation-aware context **without re-computing routing logic**.
+- The router is **deterministic**: same input → same node.
+- It produces `_selected_segment` in the graph state for later priority computation.
+- Even if multiple signals apply (e.g., campaign + question), **priority rules** determine the final route.
+- This enables downstream nodes (priority assignment, message generation) to consume segmentation-aware context **without re-computing routing logic**.
 
 ---
 
-
-# **Step 3 — Segmentation Engines**
+## **Step 3 — Segmentation Engines**
 
 Each segmentation module is implemented as an independent **LangGraph node**. These modules **must produce standardized outputs** for downstream phases (priority, generation, compliance, experimentation) to consume seamlessly.
 
@@ -185,8 +184,8 @@ Focuses on **Recency, Frequency, and Monetary** behavior for personalization flo
 
 **Typical Signals:**
 
-* `campaign_goal` includes `"churn"`, `"retention"`, `"loyalty"`
-* Purchase history, number of interactions, average order value
+- `campaign_goal` includes `"churn"`, `"retention"`, `"loyalty"`
+- Purchase history, number of interactions, average order value
 
 **Input State Example:**
 
@@ -225,8 +224,8 @@ Detects **user intent** from conversational input. Often the most influential se
 
 **Typical Signals:**
 
-* `user_message` contains questions or commands
-* Keywords like `"?"`, `"ask"`, `"tell me about"`
+- `user_message` contains questions or commands
+- Keywords like `"?"`, `"ask"`, `"tell me about"`
 
 **Input State Example:**
 
@@ -260,8 +259,8 @@ Analyzes user **interaction patterns, emotional tone, and pacing** to adapt comp
 
 **Typical Signals:**
 
-* Campaign goals: `"engagement"`, `"real-time"`, `"activity"`
-* Frustration or sentiment in `user_message`
+- Campaign goals: `"engagement"`, `"real-time"`, `"activity"`
+- Frustration or sentiment in `user_message`
 
 **Input State Example:**
 
@@ -295,8 +294,8 @@ Categorizes users based on **profile attributes** like expertise, age group, or 
 
 **Typical Signals:**
 
-* Age group, skill level, industry, domain expertise
-* Empty or generic `user_message`
+- Age group, skill level, industry, domain expertise
+- Empty or generic `user_message`
 
 **Input State Example:**
 
@@ -323,17 +322,17 @@ Categorizes users based on **profile attributes** like expertise, age group, or 
 
 ---
 
-### ✅ Key Notes
+ ✅ Key Notes
 
-* Each module **produces a `raw_segmentation_data` object** with:
+- Each module **produces a `raw_segmentation_data` object** with:
 
-  * `label` → human-readable segment name
-  * `confidence` → score between 0.0 and 1.0
-  * `justification` → explainable reasoning for auditability
+  - `label` → human-readable segment name
+  - `confidence` → score between 0.0 and 1.0
+  - `justification` → explainable reasoning for auditability
 
-* All modules are **isolated LangGraph nodes**, allowing independent testing and subgraph execution.
+- All modules are **isolated LangGraph nodes**, allowing independent testing and subgraph execution.
 
-* Downstream nodes **merge these outputs** for final priority assignment.
+- Downstream nodes **merge these outputs** for final priority assignment.
 
 ---
 
@@ -341,21 +340,21 @@ Perfect! Let’s go through **Steps 4–7** in a single coherent doc, following 
 
 ---
 
-# **Step 4 — Priority Assignment & Output**
+## **Step 4 — Priority Assignment & Output**
 
 After all segmentation modules complete, the system must **determine which segment takes precedence**. Multiple signals may match simultaneously, so we compute **scores and justification** to select the **Final Prioritized Segment**.
 
 ### **Priority Computation**
 
-* Each module contributes:
+- Each module contributes:
 
-  * `segment` (e.g., `rfm:high_value`, `intent:question:return_policy`)
-  * `score` (float 0.0–1.0)
-  * `details` / `justification`
+  - `segment` (e.g., `rfm:high_value`, `intent:question:return_policy`)
+  - `score` (float 0.0–1.0)
+  - `details` / `justification`
 
-* The system **boosts the router-selected module** to ensure deterministic routing wins when multiple segments are valid.
+- The system **boosts the router-selected module** to ensure deterministic routing wins when multiple segments are valid.
 
-* Scores are **ranked**, and the **highest-priority segment** becomes the **authoritative segment** for downstream nodes.
+- Scores are **ranked**, and the **highest-priority segment** becomes the **authoritative segment** for downstream nodes.
 
 ---
 
@@ -394,40 +393,40 @@ After all segmentation modules complete, the system must **determine which segme
 
 ---
 
-# **Step 5 — Downstream Integration (Generation, Experiments, Deployment)**
+## **Step 5 — Downstream Integration (Generation, Experiments, Deployment)**
 
 Once the final segment is selected, it feeds all subsequent phases:
 
 1. **Message Generation**
 
-   * Uses `final_segment` to condition prompts for personalized responses.
-   * Example: `"Respond for segment: rfm:high_value. Input: 'What's the premium plan price?'"`
+   - Uses `final_segment` to condition prompts for personalized responses.
+   - Example: `"Respond for segment: rfm:high_value. Input: 'What's the premium plan price?'"`
 
 2. **Experimentation & Variant Selection**
 
-   * A/B/n experiments can use `final_segment` to assign **segment-aware variants**.
-   * Example: Users in `intent:question:return_policy` may receive one set of message variants, while `rfm:high_value` users receive another.
+   - A/B/n experiments can use `final_segment` to assign **segment-aware variants**.
+   - Example: Users in `intent:question:return_policy` may receive one set of message variants, while `rfm:high_value` users receive another.
 
 3. **Deployment**
 
-   * Selected message variants are deployed, and metadata is tracked.
-   * Segmentation ensures **consistent behavior across campaigns**.
+   - Selected message variants are deployed, and metadata is tracked.
+   - Segmentation ensures **consistent behavior across campaigns**.
 
 ---
 
-# **Step 6 — Raw State Storage Best Practices**
+## **Step 6 — Raw State Storage Best Practices**
 
 LangGraph recommends storing **raw, unformatted data** in the state:
 
-* Keep **raw signals** from each segmentation module.
-* Do **not store prompt templates or formatted outputs** in the state.
-* Compute formatted content **on-demand** in generation nodes.
+- Keep **raw signals** from each segmentation module.
+- Do **not store prompt templates or formatted outputs** in the state.
+- Compute formatted content **on-demand** in generation nodes.
 
 **Benefits:**
 
-* Easier debugging and auditability
-* Allows multiple downstream nodes to use same raw data differently
-* Makes subgraphs and reruns deterministic
+- Easier debugging and auditability
+- Allows multiple downstream nodes to use same raw data differently
+- Makes subgraphs and reruns deterministic
 
 ---
 
@@ -451,16 +450,16 @@ LangGraph recommends storing **raw, unformatted data** in the state:
 
 ---
 
-# **Step 7 — Implementation Notes (LangGraph Python)**
+## **Step 7 — Implementation Notes (LangGraph Python)**
 
-* **GoalRouter Node:** decides which segmentation node to call; writes `_selected_segment` in state.
-* **Segmentation Nodes:** produce standardized `raw_segmentation_data` payloads.
-* **Priority Node:** merges module outputs, applies boosts, and writes `final_segment`, `confidence`, and `segment_description`.
-* **Downstream Nodes:**
+- **GoalRouter Node:** decides which segmentation node to call; writes `_selected_segment` in state.
+- **Segmentation Nodes:** produce standardized `raw_segmentation_data` payloads.
+- **Priority Node:** merges module outputs, applies boosts, and writes `final_segment`, `confidence`, and `segment_description`.
+- **Downstream Nodes:**
 
-  * `generation_node` formats prompts using `final_segment`
-  * `experimentation_node` uses segment to select variants
-  * `deployment_node` records deployment status
+  - `generation_node` formats prompts using `final_segment`
+  - `experimentation_node` uses segment to select variants
+  - `deployment_node` records deployment status
 
 **Key principles:**
 
@@ -474,10 +473,10 @@ LangGraph recommends storing **raw, unformatted data** in the state:
 
 ### ✅ Summary of Segmentation Phase
 
-* Segmentation is **phase 1** of the pipeline.
-* **GoalRouter** dynamically selects RFM, Intent, Behavioral, or Profile segmentation.
-* **Raw outputs** from modules feed **priority node** → `final_segment`.
-* **Final segment** informs downstream message generation, experimentation, and deployment.
-* **State stores raw signals** for auditability, reproducibility, and subgraph flexibility.
+- Segmentation is **phase 1** of the pipeline.
+- **GoalRouter** dynamically selects RFM, Intent, Behavioral, or Profile segmentation.
+- **Raw outputs** from modules feed **priority node** → `final_segment`.
+- **Final segment** informs downstream message generation, experimentation, and deployment.
+- **State stores raw signals** for auditability, reproducibility, and subgraph flexibility.
 
 ---
