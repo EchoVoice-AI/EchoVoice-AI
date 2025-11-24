@@ -36,7 +36,7 @@ export function SegmentListView() {
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
-              New customer
+              New Segmentor
             </Button>
           }
           sx={{ mb: { xs: 3, md: 5 } }}

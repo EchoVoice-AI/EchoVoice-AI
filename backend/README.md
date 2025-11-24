@@ -59,3 +59,57 @@ For more advanced features and examples, refer to the [LangGraph documentation](
 
 LangGraph Studio also integrates with [LangSmith](https://smith.langchain.com/) for more in-depth tracing and collaboration with teammates, allowing you to analyze and optimize your chatbot's performance.
 
+
+## Database setup & migrations
+
+This project supports persisting segment configuration to Postgres (optional). The steps below show how to create a local Postgres database, set the `DATABASE_URL` environment variable in PowerShell, and run Alembic migrations. Replace names and passwords as appropriate for your environment.
+
+1. Activate your Python virtual environment (PowerShell):
+
+```powershell
+& .\.venv\Scripts\Activate.ps1
+# or adapt to your venv path
+```
+
+2. (If needed) install Python dependencies:
+
+```powershell
+pip install -r requirements.txt
+# or if you use editable install: pip install -e .
+```
+
+3. Create a Postgres user and database (run these as a Postgres superuser or via `psql`):
+
+```powershell
+# run as the postgres superuser
+psql -U postgres -c "CREATE USER echovoice_user WITH PASSWORD 'yiour password';"
+psql -U postgres -c "CREATE DATABASE echovoice_db OWNER echovoice_user;"
+psql -U postgres -c "GRANT ALL ON SCHEMA public TO echovoice_user;"
+```
+
+4. Set the `DATABASE_URL` environment variable in PowerShell (DO NOT prepend `DATABASE_URL=` in the value):
+
+```powershell
+$env:DATABASE_URL = 'postgresql+psycopg2://echovoice_user:echovoice_password@localhost:5432/echovoice_db'
+```
+
+5. Run Alembic migrations from the `backend` directory. If the `alembic` console entrypoint is not available, run via the venv Python module:
+
+```powershell
+# from backend/ directory
+python -m alembic -c alembic.ini upgrade head
+# or if alembic is on PATH:
+alembic -c alembic.ini upgrade head
+```
+
+Notes & troubleshooting
+- If you see an SQLAlchemy URL parsing error, ensure the env var value is the raw URL string (no extra `DATABASE_URL=` prefix).
+- If Alembic fails with `permission denied for schema public`, connect as a superuser and run the `GRANT ALL ON SCHEMA public TO <user>;` command shown above.
+- After migrations run, the backend will persist/retrieve segments from Postgres when `DATABASE_URL` is present.
+
+6. Start the FastAPI dev server (run from `backend/`):
+
+```powershell
+uvicorn api.main:app --reload --host 127.0.0.1 --port 8000
+```
+
