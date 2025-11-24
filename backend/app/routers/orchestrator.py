@@ -1,27 +1,26 @@
 from fastapi import APIRouter, HTTPException, Depends
 from pydantic import BaseModel, Field
-from typing import Optional, Dict, Any
-from typing import AsyncGenerator
+from typing import Optional, Dict, Any, AsyncGenerator
 
-from backend.services.logger import get_logger
-from ..store import MemoryStore, store
-from ..graph import Orchestrator
-from ..nodes.segmenter_node import SegmenterNode
-from ..nodes.retriever_node import RetrieverNode
-from ..nodes.generator_node import GeneratorNode
-from ..nodes.safety_node import SafetyNode
-from ..nodes.analytics_node import AnalyticsNode
+from services.logger import get_logger
+from app.store import MemoryStore, store
+from app.graph import Orchestrator
+from app.nodes.segmenter_node import SegmenterNode
+from app.nodes.retriever_node import RetrieverNode
+from app.nodes.generator_node import GeneratorNode
+from app.nodes.safety_node import SafetyNode
+from app.nodes.hitl_node import HITLNode
+from app.nodes.analytics_node import AnalyticsNode
 
 router = APIRouter()
 logger = get_logger("orchestrator")
 
 
 def get_store() -> MemoryStore:
-    """FastAPI dependency returning the global memory store singleton."""
+    """Return the global in-memory store singleton."""
     return store
-
-
 def get_segmenter() -> SegmenterNode:
+    """Default segmenter provider (can be overridden in tests)."""
     return SegmenterNode()
 
 
@@ -35,6 +34,8 @@ def get_generator() -> GeneratorNode:
 
 def get_safety() -> SafetyNode:
     return SafetyNode()
+def get_hitl() -> HITLNode:
+    return HITLNode()
 
 
 def get_analytics() -> AnalyticsNode:
@@ -47,12 +48,13 @@ async def get_orchestrator(
     retriever: RetrieverNode = Depends(get_retriever),
     generator: GeneratorNode = Depends(get_generator),
     safety: SafetyNode = Depends(get_safety),
+    hitl: HITLNode = Depends(get_hitl),
     analytics: AnalyticsNode = Depends(get_analytics),
     ) -> AsyncGenerator[Orchestrator, None]:
     """FastAPI dependency returning a per-request Orchestrator instance.
 
-    This constructs an Orchestrator per request using node instances
-    provided by DI so tests can override node providers individually.
+    The Orchestrator delegates flow execution to the LangGraph graph.
+    We ensure resources are cleaned up at the end of the request.
     """
     orch = Orchestrator(
         store_=store,
@@ -61,6 +63,7 @@ async def get_orchestrator(
         retriever=retriever,
         generator=generator,
         safety=safety,
+        hitl=hitl,
         analytics=analytics,
     )
     try:
@@ -73,11 +76,18 @@ async def get_orchestrator(
 
 
 class CustomerModel(BaseModel):
-    id: Optional[str] = None
-    name: Optional[str] = None
-    email: Optional[str] = None
-    last_event: Optional[str] = None
-    properties: Dict[str, Any] = Field(default_factory=dict)
+    id: Optional[str] = Field(None, example="U001")
+    name: Optional[str] = Field(None, example="Selvi")
+    email: Optional[str] = Field(None, example="a@example.com")
+    last_event: Optional[str] = Field(None, example="payment_plans")
+    properties: Dict[str, Any] = Field(
+        default_factory=dict,
+        example={
+            "form_started": "yes",
+            "scheduled": "no",
+            "attended": "no",
+        },
+    )
 
 
 class OrchestrateRequest(BaseModel):
@@ -85,12 +95,14 @@ class OrchestrateRequest(BaseModel):
 
 
 @router.post("/orchestrate")
-async def orchestrate(payload: OrchestrateRequest, orchestrator: Orchestrator = Depends(get_orchestrator)):
-    # Use Pydantic v2 model_dump for compatibility with newer versions
+async def orchestrate(
+    payload: OrchestrateRequest,
+    orchestrator: Orchestrator = Depends(get_orchestrator),
+):
+    """Run the personalization flow for a given customer."""
     customer = payload.customer.model_dump()
     if not customer:
         raise HTTPException(status_code=400, detail="customer missing")
 
-    # Delegate orchestration to the Orchestrator service
     result = await orchestrator.run_flow("default_personalization", customer)
     return result

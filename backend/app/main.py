@@ -8,7 +8,7 @@ import uvicorn
 from backend.services.logger import get_logger
 from .routers.health import router as health_router
 from .routers.orchestrator import router as orchestrator_router
-from .routers.debug import router as debug_router
+from .routers.media import router as media_router # added import for media router
 
 logger = get_logger('orchestrator')
 app = FastAPI(title='EchoVoice-AI Orchestrator')
@@ -28,6 +28,7 @@ app.add_middleware(
 # Register routers (standard `routers/` package)
 app.include_router(health_router)
 app.include_router(orchestrator_router)
+app.include_router(media_router)  # included media router
 
 # Mount debug router only when explicitly enabled in environment (dev only)
 if is_debug_enabled():
