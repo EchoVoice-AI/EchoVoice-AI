@@ -5,10 +5,10 @@ from pydantic import BaseModel
 from typing import Optional, Dict, Any
 import uvicorn
 
-from services.logger import get_logger
+from backend.services.logger import get_logger
 from .routers.health import router as health_router
 from .routers.orchestrator import router as orchestrator_router
-from app.routers.debug import router as debug_router
+from .routers.debug import router as debug_router
 
 logger = get_logger('orchestrator')
 app = FastAPI(title='EchoVoice-AI Orchestrator')

@@ -3,9 +3,9 @@ from pydantic import BaseModel, Field
 from typing import Optional, Dict, Any
 from typing import AsyncGenerator
 
-from services.logger import get_logger
-from app.store import MemoryStore, store
-from app.graph import Orchestrator
+from backend.services.logger import get_logger
+from ..store import MemoryStore, store
+from ..graph import Orchestrator
 from ..nodes.segmenter_node import SegmenterNode
 from ..nodes.retriever_node import RetrieverNode
 from ..nodes.generator_node import GeneratorNode

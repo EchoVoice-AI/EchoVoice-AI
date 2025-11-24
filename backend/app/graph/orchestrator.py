@@ -6,14 +6,14 @@ graph executor implemented in a later issue.
 """
 from typing import Any, Dict, Optional
 
-from app.store import MemoryStore, store
-from services.logger import get_logger
-from app.nodes.segmenter_node import SegmenterNode
-from app.nodes.retriever_node import RetrieverNode
-from app.nodes.generator_node import GeneratorNode
-from app.nodes.safety_node import SafetyNode
-from app.nodes.analytics_node import AnalyticsNode
-from services.delivery import send_email_mock
+from ..store import MemoryStore, store
+from backend.services.logger import get_logger
+from ..nodes.segmenter_node import SegmenterNode
+from ..nodes.retriever_node import RetrieverNode
+from ..nodes.generator_node import GeneratorNode
+from ..nodes.safety_node import SafetyNode
+from ..nodes.analytics_node import AnalyticsNode
+from backend.services.delivery import send_email_mock
 
 
 logger = get_logger("graph.orchestrator")
