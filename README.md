@@ -145,13 +145,3 @@ This architecture allows:
 * transparent decision-making for every step
 
 ---
-
-If you want, I can also provide:
-
-✅ A polished **project description for Innovation Studio submission**
-✅ A **system architecture diagram** (PNG/SVG)
-✅ **Agent prompt templates** (Azure OpenAI format)
-✅ **Full API documentation**
-✅ **A/B/n experiment logic implementation**
-
-Just say: **"Generate the full architecture diagram"** or **"Add agent prompts"**.
