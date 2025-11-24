@@ -39,3 +39,12 @@ def get_allowed_origins() -> List[str]:
 
 # Redis URL for adapter (optional - set to enable Redis-backed store)
 REDIS_URL = os.getenv("REDIS_URL")
+
+
+def is_debug_enabled() -> bool:
+	"""Return True when debug routes/features should be enabled.
+
+	Controlled via the `ECHO_DEBUG` environment variable (1/true/yes).
+	"""
+	val = os.getenv("ECHO_DEBUG", "").lower()
+	return val in ("1", "true", "yes")
