@@ -32,7 +32,7 @@ export function SegmentListView() {
           action={
             <Button
               component={RouterLink}
-              href={paths.dashboard.customer.new}
+              href={paths.dashboard.segments.new}
               variant="contained"
               startIcon={<Iconify icon="mingcute:add-line" />}
             >
