@@ -1,1 +1,1 @@
-# Generation phase package
+"""Generation phase package."""

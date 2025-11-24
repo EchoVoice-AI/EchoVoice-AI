@@ -1,4 +1,4 @@
-"""Simple logger wrapper"""
+"""Simple logger wrapper."""
 import logging
 
 logger = logging.getLogger("agent")

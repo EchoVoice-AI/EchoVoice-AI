@@ -1,3 +1,12 @@
+"""State model for the LangGraph-based agent pipeline.
+
+This module defines GraphState, the shared TypedDict used to pass data
+between nodes in the LangGraph pipeline. It covers phases including
+segmentation, content retrieval, message generation & compliance, and
+experimentation & feedback.
+
+See: https://langchain-ai.github.io/langgraph/concepts/low_level/#state
+"""
 from dataclasses import dataclass
 from typing import Any, Dict, List, TypedDict
 

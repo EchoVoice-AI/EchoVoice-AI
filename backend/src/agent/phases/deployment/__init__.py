@@ -1,1 +1,1 @@
-# Deployment phase package
+"""Deployment phase package."""
