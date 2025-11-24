@@ -4,6 +4,7 @@ __pycache__/
 *$py.class
 .venv/
 /.venv
+.ruff_cache/
 
 # C extensions
 *.so
