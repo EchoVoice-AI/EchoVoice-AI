@@ -3,162 +3,189 @@
 """
 Media-related services for EchoVoice AI.
 
-Responsibilities:
-- Speech-to-Text (STT) using Azure Speech (planned)
-- Text-to-Speech (TTS) using Azure Speech (planned)
-- Translation using Azure Translator (implemented via REST)
-
-These functions are pure service logic. Routers call these,
-and they can later be re-used by other flows (e.g., LangGraph)
-without going through HTTP again.
+Supports:
+- Speech-to-Text (STT) using Azure Speech (real when configured, stub fallback)
+- Text-to-Speech (TTS) using Azure Speech (real when configured, stub fallback)
+- Translation using Azure Translator (real)
 """
 
-from typing import Optional
+from __future__ import annotations
+
+import asyncio
+import uuid
+from pathlib import Path
+from typing import Optional, Any
 
 import httpx
+
+# Azure SDK (TTS/STT)
+import azure.cognitiveservices.speech as speechsdk  # type: ignore
 
 from app import config
 from services.logger import get_logger
 
+
 logger = get_logger("media")
 
 
-class MediaConfigError(RuntimeError):
-    """Raised when required Azure media configuration is missing."""
+TTS_DIR = Path("data/tts")
+TTS_DIR.mkdir(exist_ok=True, parents=True)
+
+STT_TMP = Path("data/stt_tmp")
+STT_TMP.mkdir(exist_ok=True, parents=True)
 
 
-def _require_speech_config() -> None:
-    """Ensure Azure Speech configuration is set before STT/TTS calls."""
-    if not config.AZURE_SPEECH_KEY or not config.AZURE_SPEECH_REGION:
-        raise MediaConfigError(
-            "Azure Speech config missing. "
-            "Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION in your environment."
-        )
+# ---------------------------------------------------------
+# Helper: Check whether Azure Speech is configured
+# ---------------------------------------------------------
+
+def _has_speech_config() -> bool:
+    return bool(config.AZURE_SPEECH_KEY and config.AZURE_SPEECH_REGION)
 
 
-def _require_translator_config() -> None:
-    """Ensure Azure Translator configuration is set before translation calls."""
-    if not config.AZURE_TRANSLATOR_KEY or not config.AZURE_TRANSLATOR_ENDPOINT:
-        raise MediaConfigError(
-            "Azure Translator config missing. "
-            "Set AZURE_TRANSLATOR_KEY and AZURE_TRANSLATOR_ENDPOINT "
-            "in your environment."
-        )
+def _get_speech_config() -> speechsdk.SpeechConfig:
+    if not _has_speech_config():
+        raise RuntimeError("Azure Speech config missing")
+
+    return speechsdk.SpeechConfig(
+        subscription=config.AZURE_SPEECH_KEY,
+        region=config.AZURE_SPEECH_REGION,
+    )
 
 
-# --------- Speech to Text --------- #
+# ---------------------------------------------------------
+# SPEECH TO TEXT
+# ---------------------------------------------------------
 
 async def speech_to_text_from_url(audio_url: str) -> str:
     """
-    Convert speech (from an audio URL) into text.
-
-    Current implementation is a stub for local development:
-    - Validates that Azure Speech config is present.
-    - Logs the call.
-    - Returns a placeholder transcript.
-
-    Later, you can replace the stub with a real Azure Speech SDK or REST call.
+    Speech-to-text:
+    - If Azure Speech configured → real STT
+    - Else → stub fallback (local dev)
     """
-    _require_speech_config()
-    logger.info("Starting speech-to-text for audio_url=%s", audio_url)
 
-    # TODO: Replace this stub with a real Azure Speech call.
-    transcript = f"[stub transcript for {audio_url}]"
+    # Fallback: no Azure config
+    if not _has_speech_config():
+        logger.info("STT fallback mode — no Azure config set")
+        return f"[STT stub transcript for {audio_url}]"
 
-    logger.info("Completed speech-to-text for audio_url=%s", audio_url)
-    return transcript
+    # Real Azure path
+    logger.info("Downloading audio from %s for STT", audio_url)
+
+    tmp_path = STT_TMP / f"{uuid.uuid4().hex}.wav"
+
+    async with httpx.AsyncClient() as client:
+        r = await client.get(audio_url)
+        r.raise_for_status()
+        tmp_path.write_bytes(r.content)
+
+    text = await asyncio.get_event_loop().run_in_executor(
+        None, _stt_local_file, tmp_path
+    )
+
+    try:
+        tmp_path.unlink(missing_ok=True)
+    except:
+        pass
+
+    return text
 
 
-# --------- Text to Speech --------- #
+def _stt_local_file(path: Path) -> str:
+    speech_config = _get_speech_config()
+    audio_config = speechsdk.AudioConfig(filename=str(path))
+    recognizer = speechsdk.SpeechRecognizer(
+        speech_config=speech_config,
+        audio_config=audio_config,
+    )
+
+    result = recognizer.recognize_once()
+
+    if result.reason == speechsdk.ResultReason.RecognizedSpeech:
+        return result.text
+
+    raise RuntimeError(f"Azure STT failed — reason={result.reason}")
+
+
+# ---------------------------------------------------------
+# TEXT TO SPEECH
+# ---------------------------------------------------------
 
 async def text_to_speech_to_url(text: str) -> str:
     """
-    Convert text into speech and return an audio URL.
-
-    Current implementation is a stub:
-    - Validates Azure Speech config.
-    - Logs the call.
-    - Returns a fake URL.
-
-    In a real implementation you would:
-    - Call Azure TTS to generate audio.
-    - Store the audio in blob storage (or similar).
-    - Return the storage URL for the UI to play.
+    Text-to-speech:
+    - Real Azure TTS when configured
+    - Stub fallback when missing
     """
-    _require_speech_config()
-    logger.info("Starting text-to-speech (text length=%d)", len(text))
 
-    # TODO: Replace this stub with a real Azure TTS call and persisted audio.
-    fake_audio_url = "https://example.com/audio/generated-from-tts.wav"
+    # Fallback
+    if not _has_speech_config():
+        logger.info("TTS fallback mode — no Azure config set")
+        fake_url = "data/tts/fake-audio.wav"
+        return fake_url
 
-    logger.info("Completed text-to-speech, audio_url=%s", fake_audio_url)
-    return fake_audio_url
+    # Real Azure TTS
+    out_path = await asyncio.get_event_loop().run_in_executor(
+        None, _tts_local_file, text
+    )
+    return str(out_path)
 
 
-# --------- Translation --------- #
-
-async def translate_text(text: str, target_lang: str) -> str:
-    """
-    Translate text using Azure Translator REST API.
-
-    Uses:
-    - AZURE_TRANSLATOR_ENDPOINT (e.g. "https://api.cognitive.microsofttranslator.com")
-    - AZURE_TRANSLATOR_KEY
-    - AZURE_TRANSLATOR_REGION (if required by your resource)
-    """
-    _require_translator_config()
-    logger.info(
-        "Starting translation to target_lang=%s (text length=%d)",
-        target_lang,
-        len(text),
+def _tts_local_file(text: str) -> Path:
+    speech_config = _get_speech_config()
+    speech_config.speech_synthesis_voice_name = (
+        config.AZURE_SPEECH_TTS_VOICE or "en-US-JennyNeural"
     )
 
-    base = config.AZURE_TRANSLATOR_ENDPOINT.rstrip("/")
-    url = f"{base}/translate"
+    filename = TTS_DIR / f"{uuid.uuid4().hex}.wav"
 
-    params = {
-        "api-version": "3.0",
-        "to": target_lang,
-    }
+    audio_cfg = speechsdk.audio.AudioOutputConfig(filename=str(filename))
+    synthesizer = speechsdk.SpeechSynthesizer(
+        speech_config=speech_config, audio_config=audio_cfg
+    )
 
+    result = synthesizer.speak_text_async(text).get()
+
+    if result.reason != speechsdk.ResultReason.SynthesizingAudioCompleted:
+        raise RuntimeError(f"Azure TTS failed — reason={result.reason}")
+
+    return filename
+
+
+# ---------------------------------------------------------
+# TRANSLATION (REAL ONLY)
+# ---------------------------------------------------------
+
+def _require_translator():
+    if not config.AZURE_TRANSLATOR_KEY or not config.AZURE_TRANSLATOR_ENDPOINT:
+        raise RuntimeError(
+            "Azure Translator missing. "
+            "Set AZURE_TRANSLATOR_KEY + AZURE_TRANSLATOR_ENDPOINT"
+        )
+
+
+async def translate_text(text: str, target_lang: str) -> str:
+    _require_translator()
+
+    endpoint = config.AZURE_TRANSLATOR_ENDPOINT.rstrip("/")
+    url = f"{endpoint}/translate"
+
+    params = {"api-version": "3.0", "to": target_lang}
     headers = {
-        "Ocp-Apim-Subscription-Key": config.AZURE_TRANSLATOR_KEY,
-        # Some Azure setups require the region header as well.
-        "Ocp-Apim-Subscription-Region": config.AZURE_TRANSLATOR_REGION or "",
         "Content-Type": "application/json",
+        "Ocp-Apim-Subscription-Key": config.AZURE_TRANSLATOR_KEY,
+        "Ocp-Apim-Subscription-Region": config.AZURE_TRANSLATOR_REGION or "",
     }
 
     body = [{"Text": text}]
 
-    try:
-        async with httpx.AsyncClient(timeout=10) as client:
-            resp = await client.post(url, params=params, headers=headers, json=body)
-        resp.raise_for_status()
-    except httpx.HTTPError as e:
-        logger.exception("Azure Translator HTTP error")
-        raise RuntimeError("Azure Translator request failed") from e
+    logger.info("Calling Azure Translator → %s", target_lang)
 
-    try:
-        data = resp.json()
-        # Expected response shape:
-        # [
-        #   {
-        #     "translations": [
-        #       {
-        #         "text": "...",
-        #         "to": "xx"
-        #       }
-        #     ]
-        #   }
-        # ]
-        first_item = data[0]
-        translations = first_item.get("translations", [])
-        if not translations:
-            raise KeyError("Missing 'translations' in Azure response")
-        translated_text = translations[0]["text"]
-    except Exception as e:
-        logger.exception("Failed to parse Azure Translator response")
-        raise RuntimeError("Invalid response from Azure Translator") from e
+    async with httpx.AsyncClient(timeout=10) as client:
+        resp = await client.post(url, params=params, headers=headers, json=body)
 
-    logger.info("Completed translation to target_lang=%s", target_lang)
-    return translated_text
+    resp.raise_for_status()
+    data = resp.json()
+
+    translated = data[0]["translations"][0]["text"]
+    return translated
