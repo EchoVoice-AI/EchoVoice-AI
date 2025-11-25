@@ -20,6 +20,7 @@ from .config import SETTINGS
 BASE_DIR = Path(__file__).resolve().parents[1]
 SNAPSHOT_DIR = BASE_DIR / "segments_snapshots"
 GRAPH_PY = BASE_DIR.parent / "src" / "agent" / "graph.py"
+GRAPH_CONFIG_PATH = BASE_DIR / "data" / "graph_config.json"
 
 # Use Postgres-backed storage when configured via `SETTINGS`
 USE_DB = bool(SETTINGS.use_db)
@@ -139,3 +140,45 @@ def default_segments_from_graph() -> List[Dict]:
             }
         ]
     return segments
+
+
+def load_graph_config() -> Dict:
+    """Load a lightweight graph configuration JSON used by the frontend editor.
+
+    The config is intentionally minimal: `name`, `nodes`, and `edges` so the
+    frontend can edit a simple representation without touching Python source.
+    If no config exists, a default structure is returned.
+    """
+    if GRAPH_CONFIG_PATH.exists():
+        try:
+            with open(GRAPH_CONFIG_PATH, encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            pass
+    # Fallback default built from node names
+    nodes = default_segments_from_graph()
+    node_objs = [
+        {"id": s["id"], "label": s["name"], "type": "segment", "metadata": s.get("metadata", {})}
+        for s in nodes
+    ]
+    # A very small default set of edges mirroring `src/agent/graph.py` composition
+    edges = [
+        {"from": "START", "to": "rfm_segmentor_node"},
+        {"from": "START", "to": "intent_segmentor_node"},
+        {"from": "START", "to": "behavioral_segmentor_node"},
+        {"from": "START", "to": "profile_segmentor_node"},
+    ]
+    return {"name": "EchoVoice Agent Graph", "nodes": node_objs, "edges": edges}
+
+
+def save_graph_config(cfg: Dict) -> None:
+    """Persist the simple graph configuration to disk.
+
+    Overwrites the JSON file at `GRAPH_CONFIG_PATH`.
+    """
+    try:
+        with open(GRAPH_CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(cfg, f, indent=2, ensure_ascii=False)
+    except Exception:
+        # Best-effort: raise to let caller return 500
+        raise
