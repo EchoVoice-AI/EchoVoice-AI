@@ -106,3 +106,54 @@ def test_debug_previews_cache(monkeypatch):
     # cleanup env
     os.environ.pop("ECHO_DEBUG_CACHE_TTL", None)
     app.dependency_overrides.clear()
+
+
+def test_debug_run_full_pipeline():
+    """Test POST /debug/run returns full orchestrator result (MessageState)."""
+    class FullMockOrchestrator:
+        async def run_flow(self, flow_name, payload):
+            # Return complete MessageState structure
+            return {
+                "segment": {"category": "high_value"},
+                "citations": ["citation1", "citation2"],
+                "variants": [
+                    {"id": "V1", "subject": "Subject 1", "body": "Body 1"},
+                    {"id": "V2", "subject": "Subject 2", "body": "Body 2"},
+                ],
+                "safety": {
+                    "safe": [{"id": "V1", "subject": "Subject 1", "body": "Body 1"}],
+                    "blocked": [{"id": "V2", "reason": "policy violation"}],
+                },
+                "analysis": {"winner": {"variant_id": "V1"}},
+                "delivery": {"status": "sent", "message_id": "msg123"},
+            }
+
+    app.dependency_overrides[get_orchestrator] = lambda: FullMockOrchestrator()
+    client = TestClient(app)
+
+    payload = {
+        "customer": {
+            "id": "U999",
+            "name": "Test User",
+            "email": "test@example.com",
+        }
+    }
+
+    r = client.post("/debug/run", json=payload)
+    assert r.status_code == 200
+    data = r.json()
+
+    # Verify all expected keys are present in full MessageState
+    assert "segment" in data
+    assert "citations" in data
+    assert "variants" in data
+    assert "safety" in data
+    assert "analysis" in data
+    assert "delivery" in data
+
+    # Verify some structure
+    assert data["segment"]["category"] == "high_value"
+    assert len(data["variants"]) == 2
+    assert data["analysis"]["winner"]["variant_id"] == "V1"
+
+    app.dependency_overrides.clear()
