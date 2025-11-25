@@ -77,14 +77,6 @@ def get_all_segments() -> List[dict]:
             d = r.dict()
             # Map DB `meta` field back to `metadata` for API compatibility
             d["metadata"] = d.pop("meta", {})
-
-            # Diagnostic log: show exactly what was read from DB for this row.
-            # Use WARNING level so it appears in typical uvicorn logs without
-            # requiring debug-level configuration.
-            try:
-                logger.warning("DB row read: id=%s meta=%s", d.get("id"), json.dumps(d.get("metadata", {})))
-            except Exception:
-                logger.warning("DB row read: id=%s meta=<<unserializable>>", d.get("id"))
             results.append(d)
         return results
 

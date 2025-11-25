@@ -2,6 +2,7 @@ import type { CardProps } from '@mui/material/Card';
 import type { ISegmentorCard } from 'src/types/segmentor';
 
 import { useState } from 'react';
+import { useSWRConfig } from 'swr';
 import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
@@ -10,13 +11,12 @@ import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
 import ListItemText from '@mui/material/ListItemText';
 import { Switch, FormControlLabel } from '@mui/material';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { fShortenNumber } from 'src/utils/format-number';
 
 import { AvatarShape } from 'src/assets/illustrations';
-import axiosInstance, { endpoints } from 'src/lib/axios';
-import { mutate } from 'swr';
-import CircularProgress from '@mui/material/CircularProgress';
+import axiosInstance, { fetcher, endpoints } from 'src/lib/axios';
 
 import { Image } from 'src/components/image';
 import { toast } from 'src/components/snackbar';
@@ -28,33 +28,60 @@ type Props = CardProps & {
 };
 
 export function SegmentorCard({ segment, sx, ...other }: Props) {
-  const [enabled, setEnabled] = useState<boolean>(!!segment.enabled);
+  // Component-level loading indicator while mutate runs
   const [isUpdating, setIsUpdating] = useState<boolean>(false);
+  const { mutate, cache } = useSWRConfig();
 
   const handleToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.checked;
+    const key = endpoints.segmentor.list;
 
-    // Optimistic update
-    setEnabled(newValue);
+    // Read current cached data (may be undefined or wrapped). Coerce to array
+    const raw = cache.get(key);
+    let currentArray: any[] = [];
+    if (Array.isArray(raw)) {
+      currentArray = raw as any[];
+    } else if (raw && Array.isArray((raw as any).data)) {
+      currentArray = (raw as any).data as any[];
+    } else if (raw && Array.isArray((raw as any).value)) {
+      currentArray = (raw as any).value as any[];
+    } else {
+      currentArray = [];
+    }
+
+    // Build optimistic payload: set enabled for this segment locally
+    const optimisticData = currentArray.map((s: any) => (s.id === segment.id ? { ...s, enabled: newValue } : s));
+
     setIsUpdating(true);
 
-    const url = `${endpoints.segmentor.update}${segment.id}`;
-    const promise = axiosInstance.patch(url, { enabled: newValue });
+    // Use mutate with optimisticData and rollbackOnError so SWR updates UI immediately
+    const mutatePromise = mutate(
+      key,
+      async () => {
+        // Perform the server update
+        await axiosInstance.patch(`${endpoints.segmentor.update}${segment.id}`, { enabled: newValue });
+
+        // Fetch latest from server and return to populate cache
+        const refreshed = await fetcher(key);
+        return refreshed;
+      },
+      {
+        optimisticData,
+        rollbackOnError: true,
+        revalidate: false,
+        populateCache: true,
+      }
+    );
 
     try {
-      toast.promise(promise, {
+      toast.promise(mutatePromise, {
         loading: newValue ? 'Enabling...' : 'Disabling...',
         success: newValue ? 'Segment enabled' : 'Segment disabled',
         error: 'Failed to update segment',
       });
 
-      await promise;
-
-      // Revalidate the segments list so the parent view reflects server state
-      await mutate(endpoints.segmentor.list);
+      await mutatePromise;
     } catch (err) {
-      // Revert optimistic update on error
-      setEnabled(!newValue);
       console.error('Failed to PATCH segment enabled state', err);
     } finally {
       setIsUpdating(false);
@@ -122,10 +149,10 @@ export function SegmentorCard({ segment, sx, ...other }: Props) {
         }}
       >
         <FormControlLabel
-          control={<Switch checked={enabled} onChange={handleToggle} disabled={isUpdating} />}
+          control={<Switch checked={!!segment.enabled} onChange={handleToggle} disabled={isUpdating} />}
           label={
             <Box sx={{ display: 'flex', alignItems: 'center' }}>
-              {enabled ? 'Enabled' : 'Disabled'}
+              {segment.enabled ? 'Enabled' : 'Disabled'}
               {isUpdating && <CircularProgress size={14} sx={{ ml: 1 }} />}
             </Box>
           }
