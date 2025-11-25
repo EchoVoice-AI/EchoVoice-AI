@@ -1,4 +1,4 @@
-import type { IUserCard } from 'src/types/user';
+import type { ISegmentorCard } from 'src/types/segmentor';
 
 import { useState, useCallback } from 'react';
 
@@ -10,10 +10,10 @@ import { SegmentorCard } from './segment-card';
 // ----------------------------------------------------------------------
 
 type Props = {
-  users: IUserCard[];
+  segments: ISegmentorCard[];
 };
 
-export function SegmentorCardList({ users }: Props) {
+export function SegmentorCardList({ segments }: Props) {
   const [page, setPage] = useState(1);
 
   const rowsPerPage = 12;
@@ -31,17 +31,17 @@ export function SegmentorCardList({ users }: Props) {
           gridTemplateColumns: { xs: 'repeat(1, 1fr)', sm: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)' },
         }}
       >
-        {users
+        {segments
           .slice((page - 1) * rowsPerPage, (page - 1) * rowsPerPage + rowsPerPage)
-          .map((user) => (
-            <SegmentorCard key={user.id} user={user} />
+          .map((segment) => (
+            <SegmentorCard key={segment.id} segment={segment} />
           ))}
       </Box>
 
       <Pagination
         page={page}
         shape="circular"
-        count={Math.ceil(users.length / rowsPerPage)}
+        count={Math.ceil(segments.length / rowsPerPage)}
         onChange={handleChangePage}
         sx={{ mt: { xs: 5, md: 8 }, mx: 'auto' }}
       />

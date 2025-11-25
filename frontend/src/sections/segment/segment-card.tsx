@@ -21,10 +21,10 @@ import { Image } from 'src/components/image';
 // ----------------------------------------------------------------------
 
 type Props = CardProps & {
-  user: ISegmentorCard;
+  segment: ISegmentorCard;
 };
 
-export function SegmentorCard({ user, sx, ...other }: Props) {
+export function SegmentorCard({ segment, sx, ...other }: Props) {
   return (
     <Card sx={[{ textAlign: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]} {...other}>
       <Box sx={{ position: 'relative' }}>
@@ -40,8 +40,8 @@ export function SegmentorCard({ user, sx, ...other }: Props) {
         />
 
         <Avatar
-          alt={user.name}
-          src={user.avatarUrl}
+          alt={segment.name}
+          src={segment.avatarUrl}
           sx={{
             left: 0,
             right: 0,
@@ -55,8 +55,8 @@ export function SegmentorCard({ user, sx, ...other }: Props) {
         />
 
         <Image
-          src={user.coverUrl}
-          alt={user.coverUrl}
+          src={segment.coverUrl}
+          alt={segment.coverUrl}
           ratio="16/9"
           slotProps={{
             overlay: {
@@ -70,8 +70,8 @@ export function SegmentorCard({ user, sx, ...other }: Props) {
 
       <ListItemText
         sx={{ mt: 7, mb: 1 }}
-        primary={user.name}
-        secondary={user.role}
+        primary={segment.name}
+        secondary={segment.role}
         slotProps={{
           primary: { sx: { typography: 'subtitle1' } },
           secondary: { sx: { mt: 0.5 } },
@@ -107,9 +107,9 @@ export function SegmentorCard({ user, sx, ...other }: Props) {
         }}
       >
         {[
-          { label: 'Follower', value: user.totalFollowers },
-          { label: 'Following', value: user.totalFollowing },
-          { label: 'Total post', value: user.totalPosts },
+          { label: 'Follower', value: 3000 },
+          { label: 'Following', value: 400 },
+          { label: 'Total post', value: 235 },
         ].map((stat) => (
           <Box key={stat.label} sx={{ gap: 0.5, display: 'flex', flexDirection: 'column' }}>
             <Box component="span" sx={{ typography: 'caption', color: 'text.secondary' }}>

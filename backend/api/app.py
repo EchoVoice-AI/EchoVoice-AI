@@ -9,18 +9,47 @@ from __future__ import annotations
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
+import logging
+from sqlalchemy import text
+
+# Attempt to load backend/.env automatically (best-effort) so developers
+# can set `DATABASE_URL` there without having to export it in the shell.
+try:
+    from dotenv import load_dotenv
+
+    backend_root = Path(__file__).resolve().parents[1]
+    dotenv_path = backend_root / ".env"
+    if dotenv_path.exists():
+        load_dotenv(dotenv_path=str(dotenv_path))
+        logging.getLogger(__name__).info("Loaded environment from %s", dotenv_path)
+    else:
+        logging.getLogger(__name__).info("No .env file at %s; proceeding without loading .env", dotenv_path)
+except Exception:
+    # If python-dotenv is not installed, continue — require env vars be set externally.
+    logging.getLogger(__name__).info("python-dotenv not available; ensure DATABASE_URL is set in the environment if using DB mode")
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from . import storage
 from .config import SETTINGS
+from .routes import router as api_router
 
 _ = SETTINGS
 
-# Ensure environment is loaded before importing modules that may read it.
-# Import storage after SETTINGS exists so it sees the loaded env.
-from . import storage
-from .routes import router as api_router
+# Quick import-time diagnostic to show DB mode and whether DB backend loaded.
+# This prints immediately when the module is imported by uvicorn so it's
+# visible in the server console even if lifespan/startup handlers aren't
+# producing output for some reason.
+try:
+    logging.getLogger(__name__).info(
+        "[startup-diagnostic] USE_DB=%s _db_loaded=%s",
+        getattr(storage, "USE_DB", False),
+        getattr(storage, "_db", None) is not None,
+    )
+except Exception:
+    # Best-effort; avoid crashing import if something goes wrong
+    logging.getLogger(__name__).info("[startup-diagnostic] failed to evaluate storage diagnostics")
 
 # Ensure src/ is importable if necessary
 src_root = Path(__file__).resolve().parents[2] / "src"
@@ -43,16 +72,38 @@ def create_app() -> FastAPI:
         a database is configured, but we don't prevent the app from
         starting if table creation fails.
         """
+        # If DB mode is enabled, verify connectivity and ensure tables exist.
         try:
-            if getattr(storage, "USE_DB", False) and getattr(storage, "_db", None) is not None:
+            if getattr(storage, "USE_DB", False):
+                # Ensure DB module imported correctly
+                if getattr(storage, "_db", None) is None:
+                    msg = "DATABASE_URL is set but DB backend module failed to import."
+                    logging.getLogger(__name__).error(msg)
+                    raise RuntimeError(msg)
+
+                # Attempt to create tables (will raise on serious failures)
                 try:
                     storage._db.create_db_and_tables()
-                except Exception:
-                    # allow server to start even if DB init fails; errors will
-                    # surface when the DB is used.
-                    pass
+                except Exception as exc:
+                    # Surface the error so operator sees it at startup
+                    logging.getLogger(__name__).exception("Failed to create DB tables: %s", exc)
+                    raise
+
+                # Lightweight connectivity check
+                try:
+                    from sqlmodel import Session
+
+                    engine = getattr(storage._db, "engine", None)
+                    if engine is None:
+                        raise RuntimeError("DB engine is not initialized (engine is None)")
+                    with Session(engine) as session:  # type: ignore[arg-type]
+                        session.exec(text("SELECT 1"))
+                except Exception as exc:
+                    logging.getLogger(__name__).exception("Database connectivity check failed: %s", exc)
+                    raise
         except Exception:
-            pass
+            # Re-raise to stop application startup
+            raise
         yield
 
     app = FastAPI(title="EchoVoice LangGraph API", lifespan=lifespan)

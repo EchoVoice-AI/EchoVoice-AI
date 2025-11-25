@@ -11,18 +11,18 @@ from __future__ import annotations
 
 import datetime
 import json
-import os
 import re
 from pathlib import Path
 from typing import Dict, List
 
+from .config import SETTINGS
+
 BASE_DIR = Path(__file__).resolve().parents[1]
-SEGMENTS_PATH = BASE_DIR / "segments.json"
 SNAPSHOT_DIR = BASE_DIR / "segments_snapshots"
 GRAPH_PY = BASE_DIR.parent / "src" / "agent" / "graph.py"
 
-# Use Postgres-backed storage when DATABASE_URL is provided in environment
-USE_DB = bool(os.environ.get("DATABASE_URL"))
+# Use Postgres-backed storage when configured via `SETTINGS`
+USE_DB = bool(SETTINGS.use_db)
 _db = None
 if USE_DB:
     try:
@@ -46,40 +46,37 @@ def load_segments() -> List[Dict]:
     configured, this function will attempt to read from it and fall back
     to the file-backed store on error.
     """
-    # Prefer DB when configured
-    if USE_DB and _db is not None:
-        try:
-            return _db.get_all_segments()
-        except Exception:
-            # Fall back to file-based if DB read fails
-            pass
+    # When DB mode is requested we must have a working DB backend module
+    # available. If the `db` module failed to import earlier (`_db is
+    # None`) then surface a clear error rather than returning `None` so
+    # the server fails loud and the operator can fix the environment.
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError(
+                "DATABASE_URL is set but the DB backend module could not be imported. "
+                "Ensure required DB dependencies (psycopg, sqlmodel) are installed and "
+                "that the environment is configured correctly."
+            )
 
-    if not SEGMENTS_PATH.exists():
-        segments = default_segments_from_graph()
-        save_segments(segments)
-        return segments
-    with open(SEGMENTS_PATH, encoding="utf-8") as f:
-        return json.load(f)
+        return _db.get_all_segments()
 
 
 def save_segments(segments: List[Dict]) -> None:
     """Persist the list of segments to the configured backend.
 
     If a DB is configured this writes to the DB via `replace_all_segments`,
-    otherwise it writes a JSON file to `backend/segments.json`.
-    """
-    # Prefer DB when configured
-    if USE_DB and _db is not None:
-        try:
-            _db.replace_all_segments(segments)
-            return
-        except Exception:
-            # fall back to file if DB write fails
-            pass
 
-    SEGMENTS_PATH.parent.mkdir(parents=True, exist_ok=True)
-    with open(SEGMENTS_PATH, "w", encoding="utf-8") as f:
-        json.dump(segments, f, indent=2, ensure_ascii=False)
+    """
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError(
+                "DATABASE_URL is set but the DB backend module could not be imported. "
+                "Ensure required DB dependencies (psycopg, sqlmodel) are installed and "
+                "that the environment is configured correctly."
+            )
+
+        _db.replace_all_segments(segments)
+        return
 
 
 def snapshot_segments(segments: List[Dict], message: str | None = None) -> Path:

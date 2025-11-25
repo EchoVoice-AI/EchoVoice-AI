@@ -8,6 +8,8 @@ is not configured via the environment.
 
 from __future__ import annotations
 
+import json
+import logging
 import os
 from typing import List
 
@@ -45,6 +47,9 @@ if DATABASE_URL:
     # Use SQLModel/create_engine; note: psycopg (psycopg>=3) is required
     engine = create_engine(DATABASE_URL, echo=False)
 
+# Logger for DB diagnostics
+logger = logging.getLogger(__name__)
+
 
 def create_db_and_tables() -> None:
     """Create database tables for models when a DB is configured.
@@ -72,6 +77,14 @@ def get_all_segments() -> List[dict]:
             d = r.dict()
             # Map DB `meta` field back to `metadata` for API compatibility
             d["metadata"] = d.pop("meta", {})
+
+            # Diagnostic log: show exactly what was read from DB for this row.
+            # Use WARNING level so it appears in typical uvicorn logs without
+            # requiring debug-level configuration.
+            try:
+                logger.warning("DB row read: id=%s meta=%s", d.get("id"), json.dumps(d.get("metadata", {})))
+            except Exception:
+                logger.warning("DB row read: id=%s meta=<<unserializable>>", d.get("id"))
             results.append(d)
         return results
 

@@ -39,8 +39,7 @@ async def get_graph() -> GraphSummary:
 async def list_segments() -> List[Segment]:
     """Return the current list of configured segments.
 
-    When a database is configured, storage will read from the DB; otherwise
-    a file-backed store in `backend/segments.json` is used.
+    When a database is configured, storage will read from the DB;
     """
     segments = storage.load_segments()
     return [Segment(**s) for s in segments]

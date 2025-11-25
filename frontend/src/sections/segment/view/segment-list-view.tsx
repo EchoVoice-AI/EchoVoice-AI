@@ -1,7 +1,7 @@
 "use client";
 
 import type { IUserCard } from 'src/types/user';
-import type { Segment } from 'src/types/segmentor';
+import type { Segment, ISegmentorCard } from 'src/types/segmentor';
 
 import { useState, useEffect } from 'react';
 
@@ -36,18 +36,23 @@ function mapSegmentToUserCard(segment: Segment): IUserCard {
 }
 
 export function SegmentListView() {
-  const [users, setUsers] = useState<IUserCard[]>([]);
+  const [segments, setSegments] = useState<ISegmentorCard[]>([]);
 
   useEffect(() => {
     let mounted = true;
-
     const load = async () => {
       try {
         const data = await fetcher(endpoints.segmentor.list) as Segment[];
-
         if (!mounted) return;
-
-        setUsers(data.map(mapSegmentToUserCard));
+        setSegments(data.map(segment => ({
+          id: segment.id,
+          name: segment.name,
+          role: (segment.metadata || {}).role || '',
+          metadata: segment.metadata || {},
+          avatarUrl: (segment.metadata || {}).avatarUrl || (segment.metadata || {}).avatar || '',
+          coverUrl: (segment.metadata || {}).coverUrl || (segment.metadata || {}).cover || '',
+          enabled: segment.enabled,
+        })));
       } catch (error) {
         // keep working with empty list on error; log for debugging
         console.error('Failed to load segments:', error);
@@ -83,7 +88,7 @@ export function SegmentListView() {
         sx={{ mb: { xs: 3, md: 5 } }}
       />
 
-      <SegmentorCardList users={users} />
+      <SegmentorCardList segments={segments} />
     </DashboardContent>
   );
 }
