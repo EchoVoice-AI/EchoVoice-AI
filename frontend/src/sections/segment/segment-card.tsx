@@ -1,6 +1,7 @@
 import type { CardProps } from '@mui/material/Card';
 import type { ISegmentorCard } from 'src/types/segmentor';
 
+import { useState } from 'react';
 import { varAlpha } from 'minimal-shared/utils';
 
 import Box from '@mui/material/Box';
@@ -13,8 +14,12 @@ import { Switch, FormControlLabel } from '@mui/material';
 import { fShortenNumber } from 'src/utils/format-number';
 
 import { AvatarShape } from 'src/assets/illustrations';
+import axiosInstance, { endpoints } from 'src/lib/axios';
+import { mutate } from 'swr';
+import CircularProgress from '@mui/material/CircularProgress';
 
 import { Image } from 'src/components/image';
+import { toast } from 'src/components/snackbar';
 
 // ----------------------------------------------------------------------
 
@@ -23,6 +28,38 @@ type Props = CardProps & {
 };
 
 export function SegmentorCard({ segment, sx, ...other }: Props) {
+  const [enabled, setEnabled] = useState<boolean>(!!segment.enabled);
+  const [isUpdating, setIsUpdating] = useState<boolean>(false);
+
+  const handleToggle = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const newValue = event.target.checked;
+
+    // Optimistic update
+    setEnabled(newValue);
+    setIsUpdating(true);
+
+    const url = `${endpoints.segmentor.update}${segment.id}`;
+    const promise = axiosInstance.patch(url, { enabled: newValue });
+
+    try {
+      toast.promise(promise, {
+        loading: newValue ? 'Enabling...' : 'Disabling...',
+        success: newValue ? 'Segment enabled' : 'Segment disabled',
+        error: 'Failed to update segment',
+      });
+
+      await promise;
+
+      // Revalidate the segments list so the parent view reflects server state
+      await mutate(endpoints.segmentor.list);
+    } catch (err) {
+      // Revert optimistic update on error
+      setEnabled(!newValue);
+      console.error('Failed to PATCH segment enabled state', err);
+    } finally {
+      setIsUpdating(false);
+    }
+  };
   return (
     <Card sx={[{ textAlign: 'center' }, ...(Array.isArray(sx) ? sx : [sx])]} {...other}>
       <Box sx={{ position: 'relative' }}>
@@ -85,8 +122,13 @@ export function SegmentorCard({ segment, sx, ...other }: Props) {
         }}
       >
         <FormControlLabel
-          control={<Switch checked={!!segment.enabled} disabled />}
-          label={segment.enabled ? 'Enabled' : 'Disabled'}
+          control={<Switch checked={enabled} onChange={handleToggle} disabled={isUpdating} />}
+          label={
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+              {enabled ? 'Enabled' : 'Disabled'}
+              {isUpdating && <CircularProgress size={14} sx={{ ml: 1 }} />}
+            </Box>
+          }
           labelPlacement="end"
         />
       </Box>

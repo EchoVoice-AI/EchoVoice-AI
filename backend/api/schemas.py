@@ -36,9 +36,12 @@ class SegmentUpdate(BaseModel):
     Any field may be omitted; only provided fields are applied.
     """
 
-    enabled: bool | None
-    priority: float | None
-    metadata: Dict[str, Any] | None
+    # Defaults are explicit `None` so FastAPI/Pydantic treat these fields
+    # as optional for partial updates. Without defaults Pydantic treats
+    # the fields as required even when `None` is allowed in the type.
+    enabled: bool | None = None
+    priority: float | None = None
+    metadata: Dict[str, Any] | None = None
 
 
 class GraphSummary(BaseModel):

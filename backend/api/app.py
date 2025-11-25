@@ -6,10 +6,11 @@ includes the route definitions from `routes.py`.
 
 from __future__ import annotations
 
+import logging
 import sys
 from contextlib import asynccontextmanager
 from pathlib import Path
-import logging
+
 from sqlalchemy import text
 
 # Attempt to load backend/.env automatically (best-effort) so developers

@@ -1,9 +1,8 @@
 "use client";
 
-import type { IUserCard } from 'src/types/user';
 import type { Segment, ISegmentorCard } from 'src/types/segmentor';
 
-import { useState, useEffect } from 'react';
+import useSWR from 'swr';
 
 import Button from '@mui/material/Button';
 
@@ -21,60 +20,32 @@ import { SegmentorCardList } from 'src/sections/segment/segmentor-card-list';
 
 // ----------------------------------------------------------------------
 
-function mapSegmentToUserCard(segment: Segment): IUserCard {
-  const metadata = segment.metadata || {};
-
-  return {
-    id: segment.id,
-    name: segment.name,
-    role: metadata.role || '',
-    coverUrl: metadata.coverUrl || metadata.cover || '',
-    avatarUrl: metadata.avatarUrl || metadata.avatar || '',
-    totalPosts: metadata.totalPosts ?? 0,
-    totalFollowers: metadata.totalFollowers ?? 0,
-    totalFollowing: metadata.totalFollowing ?? 0,
-  };
-}
 
 export function SegmentListView() {
-  const [segments, setSegments] = useState<ISegmentorCard[]>([]);
+  const { data, error, isLoading } = useSWR<Segment[]>(endpoints.segmentor.list, fetcher);
 
-  useEffect(() => {
-    let mounted = true;
-    const load = async () => {
-      try {
-        const data = await fetcher(endpoints.segmentor.list) as Segment[];
-        if (!mounted) return;
-        setSegments(data.map((segment, index) => ({
-          id: segment.id,
-          name: segment.name,
-          priority: segment.priority,
-          role: (segment.metadata || {}).role || '',
-          metadata: segment.metadata || {},
-          avatarUrl: '',
-          coverUrl: _mock.image.cover(index),
-          enabled: segment.enabled,
-        })));
-      } catch (error) {
-        // keep working with empty list on error; log for debugging
-        console.error('Failed to load segments:', error);
-      }
-    };
+  const segments: ISegmentorCard[] = (data || []).map((segment, index) => ({
+    id: segment.id,
+    name: segment.name,
+    priority: segment.priority,
+    role: (segment.metadata || {}).role || '',
+    metadata: segment.metadata || {},
+    avatarUrl: '',
+    coverUrl: _mock.image.cover(index),
+    enabled: segment.enabled,
+  }));
 
-    load();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  if (error) {
+    console.error('Failed to load segments:', error);
+  }
 
   return (
     <DashboardContent>
       <CustomBreadcrumbs
-        heading="Segmentors List"
+        heading="Segmentor Node List"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'Segments', href: paths.dashboard.segments.root },
+          { name: 'Segmentors', href: paths.dashboard.segments.root },
           { name: 'List' },
         ]}
         action={
