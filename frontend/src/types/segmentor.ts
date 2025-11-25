@@ -23,6 +23,7 @@ export type ISegmentorCard = {
   id: string;
   name: string;
   avatarUrl: string;
+  priority: number;
   role?: string;
   metadata?: Record<string, any>;
   coverUrl: string;

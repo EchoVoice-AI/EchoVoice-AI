@@ -7,14 +7,12 @@ import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
 import Avatar from '@mui/material/Avatar';
 import Divider from '@mui/material/Divider';
-import IconButton from '@mui/material/IconButton';
 import ListItemText from '@mui/material/ListItemText';
+import { Switch, FormControlLabel } from '@mui/material';
 
 import { fShortenNumber } from 'src/utils/format-number';
 
-import { _socials } from 'src/_mock';
 import { AvatarShape } from 'src/assets/illustrations';
-import { TwitterIcon, FacebookIcon, LinkedinIcon, InstagramIcon } from 'src/assets/icons';
 
 import { Image } from 'src/components/image';
 
@@ -86,14 +84,11 @@ export function SegmentorCard({ segment, sx, ...other }: Props) {
           justifyContent: 'center',
         }}
       >
-        {_socials.map((social) => (
-          <IconButton key={social.label}>
-            {social.value === 'twitter' && <TwitterIcon />}
-            {social.value === 'facebook' && <FacebookIcon />}
-            {social.value === 'instagram' && <InstagramIcon />}
-            {social.value === 'linkedin' && <LinkedinIcon />}
-          </IconButton>
-        ))}
+        <FormControlLabel
+          control={<Switch checked={!!segment.enabled} disabled />}
+          label={segment.enabled ? 'Enabled' : 'Disabled'}
+          labelPlacement="end"
+        />
       </Box>
 
       <Divider sx={{ borderStyle: 'dashed' }} />
@@ -107,7 +102,7 @@ export function SegmentorCard({ segment, sx, ...other }: Props) {
         }}
       >
         {[
-          { label: 'Follower', value: 3000 },
+          { label: 'Priority', value: segment.priority },
           { label: 'Following', value: 400 },
           { label: 'Total post', value: 235 },
         ].map((stat) => (

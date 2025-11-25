@@ -10,6 +10,7 @@ import Button from '@mui/material/Button';
 import { paths } from 'src/routes/paths';
 import { RouterLink } from 'src/routes/components';
 
+import { _mock } from 'src/_mock';
 import { fetcher, endpoints } from 'src/lib/axios';
 import { DashboardContent } from 'src/layouts/dashboard';
 
@@ -44,13 +45,14 @@ export function SegmentListView() {
       try {
         const data = await fetcher(endpoints.segmentor.list) as Segment[];
         if (!mounted) return;
-        setSegments(data.map(segment => ({
+        setSegments(data.map((segment, index) => ({
           id: segment.id,
           name: segment.name,
+          priority: segment.priority,
           role: (segment.metadata || {}).role || '',
           metadata: segment.metadata || {},
-          avatarUrl: (segment.metadata || {}).avatarUrl || (segment.metadata || {}).avatar || '',
-          coverUrl: (segment.metadata || {}).coverUrl || (segment.metadata || {}).cover || '',
+          avatarUrl: '',
+          coverUrl: _mock.image.cover(index),
           enabled: segment.enabled,
         })));
       } catch (error) {
