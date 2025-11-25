@@ -1,67 +1,27 @@
 # backend/app/store/reviews.py
 
-"""
-Helpers for storing and retrieving HITL review objects.
-
-A "review" represents a Human-in-the-Loop (HITL) review job created by HITLNode.
-Reviews are stored in the shared app.store backend (MemoryStore or RedisStore)
-under keys of the form:
-
-    hitl:{review_id}
-
-This module provides a small, typed API so other parts of the system
-(HITLNode, HITL router, tests) can work with HITL reviews without
-having to know the key format or storage details.
-"""
-
-from __future__ import annotations
-
 from datetime import datetime, timezone
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
-from app.store import store
+from app.store.memory_store import MemoryStore  # or your actual store class
 
+_STORE_KEY_PREFIX = "hitl:review:"
 
-def _review_key(review_id: str) -> str:
-    """
-    Build the storage key for a given review_id.
-
-    Example:
-        review_id = "abc123" -> "hitl:abc123"
-    """
-    return f"hitl:{review_id}"
+store = MemoryStore()  # or whatever you’re already using
 
 
-def _now_iso() -> str:
-    """
-    Return current time as an ISO 8601 string in UTC.
-
-    Using a string keeps the review object JSON-serializable, which is
-    important for RedisStore where values are stored as JSON.
-    """
-    return datetime.now(timezone.utc).isoformat()
+def _key(review_id: str) -> str:
+    return f"{_STORE_KEY_PREFIX}{review_id}"
 
 
 def create_review(
     review_id: str,
     customer: Dict[str, Any],
-    variants: List[Dict[str, Any]],
+    variants: list[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    """
-    Create and persist a new HITL review object.
+    now = datetime.now(timezone.utc).isoformat()
 
-    Args:
-        review_id: Unique identifier for the review. Should be stable and
-                   used to look up this review later via GET /hitl/{review_id}.
-        customer:  Customer payload (dict) from the orchestrator / flow state.
-        variants:  List of safe variants (dicts) produced by the generator/safety
-                   pipeline. Each should include at least an "id" and "text" field.
-
-    Returns:
-        The full review object as stored.
-    """
-    now = _now_iso()
-    review: Dict[str, Any] = {
+    review = {
         "review_id": review_id,
         "customer": customer,
         "variants": variants,
@@ -72,39 +32,47 @@ def create_review(
         "updated_at": now,
     }
 
-    store.set(_review_key(review_id), review)
+    store.set(_key(review_id), review)
     return review
 
 
 def get_review(review_id: str) -> Optional[Dict[str, Any]]:
+    return store.get(_key(review_id))
+
+
+def update_review(
+    review_id: str,
+    *,
+    status: Optional[str] = None,
+    approved_variant_id: Optional[str] = None,
+    notes: Optional[str] = None,
+) -> Optional[Dict[str, Any]]:
     """
-    Fetch a HITL review by ID.
+    Update an existing HITL review.
 
-    Args:
-        review_id: The review identifier used when it was created.
-
-    Returns:
-        The review dict if found, or None if not present in the store.
+    Only fields passed (not None) are updated. Returns the updated review,
+    or None if the review does not exist.
     """
-    return store.get(_review_key(review_id))
+    review = get_review(review_id)
+    if review is None:
+        return None
 
+    changed = False
 
-def save_review(review: Dict[str, Any]) -> None:
-    """
-    Persist an updated HITL review object.
+    if status is not None:
+        review["status"] = status
+        changed = True
 
-    This function:
-    - Updates the `updated_at` timestamp.
-    - Writes the review back to the underlying store.
+    if approved_variant_id is not None:
+        review["approved_variant_id"] = approved_variant_id
+        changed = True
 
-    It assumes `review["review_id"]` is present.
+    if notes is not None:
+        review["notes"] = notes
+        changed = True
 
-    Args:
-        review: The full review object to save.
-    """
-    review_id = review.get("review_id")
-    if not review_id:
-        raise ValueError("review object must contain a 'review_id' field")
+    if changed:
+        review["updated_at"] = datetime.now(timezone.utc).isoformat()
+        store.set(_key(review_id), review)
 
-    review["updated_at"] = _now_iso()
-    store.set(_review_key(review_id), review)
+    return review
