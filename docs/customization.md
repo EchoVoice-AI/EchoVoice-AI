@@ -27,7 +27,7 @@ This guide provides more details for customizing the RAG chat app.
 
 ## Using your own data
 
-The Chat App is designed to work with any PDF documents. The sample data is provided to help you get started quickly, but you can easily replace it with your own data. You'll want to first remove all the existing data, then add your own. See the [data ingestion guide](data_ingestion.md) for more details.
+The EchoVoice is designed to work with any PDF documents. The sample data is provided to help you get started quickly, but you can easily replace it with your own data. You'll want to first remove all the existing data, then add your own. See the [data ingestion guide](data_ingestion.md) for more details.
 
 ## Customizing the UI
 
