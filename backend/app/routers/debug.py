@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, Query, HTTPException
 from typing import Any, Dict, List, Optional
 import os
 import time
@@ -6,7 +6,7 @@ import time
 from pydantic import BaseModel
 
 from ..graph.orchestrator import Orchestrator
-from .orchestrator import get_orchestrator
+from .orchestrator import get_orchestrator, OrchestrateRequest
 from backend.services.logger import get_logger
 
 logger = get_logger("routers.debug")
@@ -155,3 +155,31 @@ async def get_debug_deliveries(
     if cache_ttl:
         _DEBUG_PREVIEWS_CACHE[cache_key] = {"value": response, "expires_at": time.time() + cache_ttl}
     return response
+
+
+@router.post("/run")
+async def debug_run_pipeline(
+    payload: OrchestrateRequest,
+    orchestrator: Orchestrator = Depends(get_orchestrator),
+) -> Dict[str, Any]:
+    """
+    Debug endpoint (Issue #10).
+
+    Runs the full orchestrator pipeline for a single customer and returns
+    the complete MessageState (all intermediate results) for debugging.
+    
+    This endpoint returns the full orchestrator result including:
+    - segment
+    - citations
+    - variants
+    - safety
+    - analysis
+    - delivery
+    """
+    customer = payload.customer.model_dump()
+    if not customer:
+        raise HTTPException(status_code=400, detail="customer missing")
+    
+    logger.info("debug/run for customer %s", customer.get("id") or customer.get("email"))
+    result = await orchestrator.run_flow("default_personalization", customer)
+    return result
