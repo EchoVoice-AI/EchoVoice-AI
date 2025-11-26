@@ -1,0 +1,10 @@
+# Ignore local env and secrets
+.env
+.env.*
+
+# Ignore generated bicep outputs
+**/bin/
+**/obj/
+
+# Ignore deployment parameters with secrets
+**/params.*.json
