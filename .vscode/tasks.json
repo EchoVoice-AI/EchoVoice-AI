@@ -1,0 +1,85 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Start App",
+            "type": "shell",
+            "command": "${workspaceFolder}/app/start.sh",
+            "windows": {
+                "command": "pwsh ${workspaceFolder}/app/start.ps1"
+            },
+            "presentation": {
+                "reveal": "silent"
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/app"
+            },
+            "problemMatcher": []
+        },
+        {
+            "label": "Development",
+            "dependsOn": [
+                "Frontend: npm run dev",
+                "Backend: uvicorn run"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "Frontend: npm run dev",
+            "type": "npm",
+            "script": "dev",
+            "isBackground": true,
+            "options": {
+                "cwd": "${workspaceFolder}/app/frontend"
+            },
+            "presentation": {
+                "reveal": "always",
+                "group": "buildWatchers",
+                "panel": "dedicated",
+                "clear": false
+            },
+            "problemMatcher": {
+                "pattern": {
+                    "regexp": ""
+                },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*ready - started server on.*",
+                    "endsPattern": ".*(?:Local|Started)[:]?\\s+https?://.*"
+                }
+            }
+        },
+        {
+            "label": "Backend: uvicorn run",
+            "type": "shell",
+            "command": "${workspaceFolder}/.venv/bin/python",
+            "windows": {
+                "command": "${workspaceFolder}\\.venv\\Scripts\\python.exe"
+            },
+            "args": ["-m", "uvicorn", "api.main:app", "--reload", "--port", "8000"],
+            "options": {
+                "cwd": "${workspaceFolder}/app/backend",
+                "env": {
+                    "LOADING_MODE_FOR_AZD_ENV_VARS": "override"
+                }
+            },
+            "isBackground": true,
+            "presentation": {
+                "reveal": "always",
+                "group": "buildWatchers",
+                "panel": "dedicated"
+            },
+            "problemMatcher": {
+                "pattern": { "regexp": "" },
+                "background": {
+                    "activeOnStart": true,
+                    "beginsPattern": ".*Uvicorn running on.*|.*Started server process.*",
+                    "endsPattern": ".*Application startup complete.*|.*\\s*Started server on.*"
+                }
+            }
+        }
+    ]
+}
