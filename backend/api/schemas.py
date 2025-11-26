@@ -59,3 +59,72 @@ class ValidationResult(BaseModel):
 
     valid: bool
     errors: List[str] = []
+
+
+class GeneratorVariant(BaseModel):
+    """A generator variant configuration exposed to the frontend."""
+
+    id: str
+    name: str
+    enabled: bool = True
+    model: str
+    prompt_template: str
+    params: Dict[str, Any] = {}
+    weight: int = Field(0, ge=0, le=100)
+    rules: List[Dict[str, Any]] = []
+
+
+class GeneratorUpdate(BaseModel):
+    name: str | None = None
+    enabled: bool | None = None
+    model: str | None = None
+    prompt_template: str | None = None
+    params: Dict[str, Any] | None = None
+    weight: int | None = None
+    rules: List[Dict[str, Any]] | None = None
+
+
+class RetrieverConfig(BaseModel):
+    id: str
+    name: str
+    type: str
+    enabled: bool = True
+    connection: Dict[str, Any] = {}
+    strategy: Dict[str, Any] = {}
+    weight: int = Field(0, ge=0, le=100)
+
+
+class RetrieverUpdate(BaseModel):
+    name: str | None = None
+    enabled: bool | None = None
+    connection: Dict[str, Any] | None = None
+    strategy: Dict[str, Any] | None = None
+    weight: int | None = None
+
+
+class DeliveryChannel(BaseModel):
+    id: str
+    name: str
+    type: str
+    enabled: bool = True
+    config: Dict[str, Any] = {}
+
+
+class HitlRule(BaseModel):
+    id: str
+    enabled: bool = True
+    conditions: List[Dict[str, Any]] = []
+    route_to: str
+    priority: int = 0
+    sample_rate: int = Field(100, ge=0, le=100)
+
+
+class PreviewRequest(BaseModel):
+    variant_id: str | None = None
+    sample_input: Dict[str, Any] = {}
+
+
+class PreviewResponse(BaseModel):
+    ok: bool = True
+    output: str | None = None
+    debug: Dict[str, Any] = {}

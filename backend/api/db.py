@@ -268,3 +268,128 @@ def get_queued_runs(limit: int = 10) -> List[dict]:
         q = select(RunModel).where(RunModel.status == "queued").order_by(RunModel.created_at)
         rows = session.exec(q).all()
         return [r.dict() for r in rows][:limit]
+
+
+# ------------------------------------------------------------------
+# Generator / Retriever / Delivery models and helpers
+# ------------------------------------------------------------------
+
+
+class GeneratorModel(SQLModel, table=True):
+    """Persisted generator variant configuration."""
+
+    id: str = Field(primary_key=True)
+    name: str
+    enabled: bool = True
+    model: str | None = None
+    prompt_template: str | None = None
+    params: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
+    weight: int = Field(default=0)
+    rules: list = Field(default_factory=list, sa_column=Column(SA_JSON))
+    __table_args__ = {"extend_existing": True}
+
+
+class RetrieverModel(SQLModel, table=True):
+    """Persisted retriever configuration."""
+
+    id: str = Field(primary_key=True)
+    name: str
+    type: str
+    enabled: bool = True
+    connection: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
+    strategy: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
+    weight: int = Field(default=0)
+    __table_args__ = {"extend_existing": True}
+
+
+class DeliveryChannelModel(SQLModel, table=True):
+    """Delivery channel configuration (webhook, websocket, etc.)."""
+
+    id: str = Field(primary_key=True)
+    name: str
+    type: str
+    enabled: bool = True
+    config: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
+    __table_args__ = {"extend_existing": True}
+
+
+class HitlRuleModel(SQLModel, table=True):
+    """Human-in-the-loop rule stored as a row; conditions stored as JSON."""
+
+    id: str = Field(primary_key=True)
+    enabled: bool = True
+    conditions: list = Field(default_factory=list, sa_column=Column(SA_JSON))
+    route_to: str | None = None
+    priority: int = Field(default=0)
+    sample_rate: int = Field(default=100)
+    __table_args__ = {"extend_existing": True}
+
+
+def get_all_generators() -> List[dict]:
+    """Return all generator rows as list of dicts."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        rows = session.exec(select(GeneratorModel)).all()
+        return [r.dict() for r in rows]
+
+
+def replace_all_generators(generators: List[dict]) -> None:
+    """Replace all generator rows with provided list."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        session.exec(sa_delete(GeneratorModel))
+        session.commit()
+        for g in generators:
+            session.add(GeneratorModel(**g))
+        session.commit()
+
+
+def get_all_retrievers() -> List[dict]:
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        rows = session.exec(select(RetrieverModel)).all()
+        return [r.dict() for r in rows]
+
+
+def replace_all_retrievers(retrievers: List[dict]) -> None:
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        session.exec(sa_delete(RetrieverModel))
+        session.commit()
+        for r in retrievers:
+            session.add(RetrieverModel(**r))
+        session.commit()
+
+
+def get_delivery_config() -> dict:
+    """Return delivery config as dict with `channels` and `hitl_rules` lists."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        channels = session.exec(select(DeliveryChannelModel)).all()
+        rules = session.exec(select(HitlRuleModel)).all()
+        return {
+            "channels": [c.dict() for c in channels],
+            "hitl_rules": [r.dict() for r in rules],
+        }
+
+
+def replace_delivery_config(cfg: dict) -> None:
+    """Replace delivery channels and hitl rules from provided cfg dict."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    channels = cfg.get("channels", [])
+    rules = cfg.get("hitl_rules", [])
+    with Session(engine) as session:
+        session.exec(sa_delete(DeliveryChannelModel))
+        session.exec(sa_delete(HitlRuleModel))
+        session.commit()
+        for c in channels:
+            session.add(DeliveryChannelModel(**c))
+        for r in rules:
+            session.add(HitlRuleModel(**r))
+        session.commit()

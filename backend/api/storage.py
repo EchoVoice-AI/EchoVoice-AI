@@ -21,6 +21,9 @@ BASE_DIR = Path(__file__).resolve().parents[1]
 SNAPSHOT_DIR = BASE_DIR / "segments_snapshots"
 GRAPH_PY = BASE_DIR.parent / "src" / "agent" / "graph.py"
 GRAPH_CONFIG_PATH = BASE_DIR / "data" / "graph_config.json"
+GENERATORS_CONFIG_PATH = BASE_DIR / "data" / "generators.json"
+RETRIEVERS_CONFIG_PATH = BASE_DIR / "data" / "retrievers.json"
+DELIVERY_CONFIG_PATH = BASE_DIR / "data" / "delivery.json"
 
 # Use Postgres-backed storage when configured via `SETTINGS`
 USE_DB = bool(SETTINGS.use_db)
@@ -60,6 +63,13 @@ def load_segments() -> List[Dict]:
             )
 
         return _db.get_all_segments()
+    # File-backed fallback: try reading segments from a JSON file if present
+    # otherwise return defaults extracted from the graph
+    try:
+        # segments are stored in the graph config by default; reuse that if present
+        return default_segments_from_graph()
+    except Exception:
+        return []
 
 
 def save_segments(segments: List[Dict]) -> None:
@@ -78,6 +88,98 @@ def save_segments(segments: List[Dict]) -> None:
 
         _db.replace_all_segments(segments)
         return
+
+    # File-backed: write into `graph_config.json` nodes/metadata if appropriate
+    # For simplicity we persist nothing special here (segments derive from graph),
+    # but keep this function present so callers can rely on it in both modes.
+    try:
+        # best-effort: update GRAPH_CONFIG_PATH nodes metadata if it exists
+        if GRAPH_CONFIG_PATH.exists():
+            cfg = load_graph_config()
+            # Convert segments into node objects if needed
+            node_objs = [
+                {"id": s["id"], "label": s.get("name", s["id"]), "type": "segment", "metadata": s.get("metadata", {})}
+                for s in segments
+            ]
+            cfg["nodes"] = node_objs
+            save_graph_config(cfg)
+    except Exception:
+        # ignore persistence errors for file-backed mode
+        pass
+
+
+def _read_json(path: Path, default: object):
+    try:
+        if path.exists():
+            with open(path, encoding="utf-8") as f:
+                return json.load(f)
+    except Exception:
+        pass
+    return default
+
+
+def _write_json(path: Path, payload: object) -> None:
+    try:
+        path.parent.mkdir(parents=True, exist_ok=True)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(payload, f, indent=2, ensure_ascii=False)
+    except Exception:
+        raise
+
+
+def load_generators() -> List[Dict]:
+    """Load generator variants from DB or file-backed JSON."""
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError("DATABASE_URL is set but the DB backend module could not be imported.")
+        return _db.get_all_generators()
+
+    return _read_json(GENERATORS_CONFIG_PATH, [])
+
+
+def save_generators(generators: List[Dict]) -> None:
+    """Persist generator variants to DB or file-backed JSON."""
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError("DATABASE_URL is set but the DB backend module could not be imported.")
+        _db.replace_all_generators(generators)
+        return
+
+    _write_json(GENERATORS_CONFIG_PATH, generators)
+
+
+def load_retrievers() -> List[Dict]:
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError("DATABASE_URL is set but the DB backend module could not be imported.")
+        return _db.get_all_retrievers()
+    return _read_json(RETRIEVERS_CONFIG_PATH, [])
+
+
+def save_retrievers(retrievers: List[Dict]) -> None:
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError("DATABASE_URL is set but the DB backend module could not be imported.")
+        _db.replace_all_retrievers(retrievers)
+        return
+    _write_json(RETRIEVERS_CONFIG_PATH, retrievers)
+
+
+def load_delivery_config() -> Dict:
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError("DATABASE_URL is set but the DB backend module could not be imported.")
+        return _db.get_delivery_config()
+    return _read_json(DELIVERY_CONFIG_PATH, {"channels": [], "hitl_rules": []})
+
+
+def save_delivery_config(cfg: Dict) -> None:
+    if USE_DB:
+        if _db is None:
+            raise RuntimeError("DATABASE_URL is set but the DB backend module could not be imported.")
+        _db.replace_delivery_config(cfg)
+        return
+    _write_json(DELIVERY_CONFIG_PATH, cfg)
 
 
 def snapshot_segments(segments: List[Dict], message: str | None = None) -> Path:

@@ -19,3 +19,8 @@ router.include_router(segments.router)
 router.include_router(ws.router)
 router.include_router(admin.router)
 router.include_router(blob.router)
+from . import generators, retrievers, delivery
+
+router.include_router(generators.router)
+router.include_router(retrievers.router)
+router.include_router(delivery.router)
