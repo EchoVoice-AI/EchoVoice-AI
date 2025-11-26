@@ -182,3 +182,92 @@ def save_graph_config(cfg: Dict) -> None:
     except Exception:
         # Best-effort: raise to let caller return 500
         raise
+
+
+def upload_blob(data: bytes, blob_name: str, content_type: str | None = None) -> str:
+    """Upload raw bytes to Azure Blob Storage and return the blob URL.
+
+    Requires `SETTINGS.azure_storage_connection_string` to be set. This
+    is a thin helper around `azure.storage.blob.BlobServiceClient`.
+    """
+    conn_str = getattr(SETTINGS, "azure_storage_connection_string", None)
+    container = getattr(SETTINGS, "azure_storage_container", "echovoice-uploads")
+    if not conn_str:
+        raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is not configured")
+
+    try:
+        from azure.storage.blob import BlobServiceClient
+        try:
+            # ContentSettings is optional and may be absent in some shim packages
+            from azure.storage.blob import ContentSettings  # type: ignore
+        except Exception:
+            ContentSettings = None
+    except Exception as exc:  # pragma: no cover - runtime dependency
+        raise RuntimeError("azure.storage.blob package is required for blob uploads") from exc
+
+    svc = BlobServiceClient.from_connection_string(conn_str)
+    container_client = svc.get_container_client(container)
+    try:
+        container_client.create_container()
+    except Exception:
+        # ignore if already exists or creation fails due to permissions
+        pass
+
+    blob_client = container_client.get_blob_client(blob_name)
+    content_settings = None
+    if ContentSettings is not None and content_type:
+        content_settings = ContentSettings(content_type=content_type)
+
+    blob_client.upload_blob(data, overwrite=True, content_settings=content_settings)
+    return blob_client.url
+
+
+def upload_fileobj(fileobj, blob_name: str, content_type: str | None = None) -> str:
+    """Upload a file-like object (has .read()) to Azure Blob Storage."""
+    # Default implementation: stream the file-like object to Azure without
+    # buffering the entire content in memory. Ensure fileobj is seeked to
+    # the beginning when possible.
+    try:
+        fileobj.seek(0)
+    except Exception:
+        pass
+    return upload_fileobj_stream(fileobj, blob_name, content_type=content_type)
+
+
+def upload_fileobj_stream(fileobj, blob_name: str, content_type: str | None = None) -> str:
+    """Stream a file-like object directly to Azure Blob Storage.
+
+    This does not read the entire file into memory and is suitable for
+    large uploads. `fileobj` should be a file-like object opened in binary
+    mode (e.g., UploadFile.file from FastAPI).
+    """
+    conn_str = getattr(SETTINGS, "azure_storage_connection_string", None)
+    container = getattr(SETTINGS, "azure_storage_container", "echovoice-uploads")
+    if not conn_str:
+        raise RuntimeError("AZURE_STORAGE_CONNECTION_STRING is not configured")
+
+    try:
+        from azure.storage.blob import BlobServiceClient
+        try:
+            from azure.storage.blob import ContentSettings  # type: ignore
+        except Exception:
+            ContentSettings = None
+    except Exception as exc:  # pragma: no cover - runtime dependency
+        raise RuntimeError("azure.storage.blob package is required for blob uploads") from exc
+
+    svc = BlobServiceClient.from_connection_string(conn_str)
+    container_client = svc.get_container_client(container)
+    try:
+        container_client.create_container()
+    except Exception:
+        pass
+
+    blob_client = container_client.get_blob_client(blob_name)
+    content_settings = None
+    if ContentSettings is not None and content_type:
+        content_settings = ContentSettings(content_type=content_type)
+
+    # azure SDK accepts a file-like object for upload_blob; use overwrite
+    # to allow re-uploads with same name.
+    blob_client.upload_blob(fileobj, overwrite=True, content_settings=content_settings)
+    return blob_client.url

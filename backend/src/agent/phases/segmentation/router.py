@@ -7,9 +7,7 @@ PROFILE_SEGMENTATION (fallback).
 """
 
 import logging
-from typing import Any, Dict, Literal
-
-from langgraph.runtime import Runtime
+from typing import Literal
 
 from agent.state import GraphState
 

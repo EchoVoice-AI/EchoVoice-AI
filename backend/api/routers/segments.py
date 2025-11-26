@@ -1,6 +1,12 @@
+"""Endpoints for listing and updating segments used by the graph editor.
+
+These routes return segment metadata consumed by the frontend and allow
+patch updates to toggle enablement, priority, or metadata.
+"""
+
 from __future__ import annotations
 
-from typing import Any, Dict, List
+from typing import List
 
 from fastapi import APIRouter, HTTPException
 
@@ -12,12 +18,17 @@ router = APIRouter()
 
 @router.get("/api/segments", response_model=List[Segment])
 async def list_segments() -> List[Segment]:
+    """Return the list of configured segments.
+
+    Each segment is converted to the `Segment` response model.
+    """
     segments = storage.load_segments()
     return [Segment(**s) for s in segments]
 
 
 @router.patch("/api/segments/{segment_id}", response_model=Segment)
 async def update_segment(segment_id: str, payload: SegmentUpdate) -> Segment:
+    """Patch update a single segment by `segment_id` and persist the change."""
     segments = storage.load_segments()
     found = None
     for s in segments:

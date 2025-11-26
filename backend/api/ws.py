@@ -7,6 +7,7 @@ to broadcast JSON messages to connected WebSocket clients.
 from __future__ import annotations
 
 from typing import Dict, List
+
 from fastapi import WebSocket
 
 
@@ -18,6 +19,7 @@ class ConnectionManager:
     """
 
     def __init__(self) -> None:
+        """Initialize the connection manager with an empty connection list."""
         self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket) -> None:

@@ -24,6 +24,7 @@ class Settings:
     """
 
     def __init__(self) -> None:
+        """Load environment variables from .env and os.environ."""
         # Attempt to load the `.env` file located in the backend package
         # directory so values defined there are available to other modules.
         env_path = Path(__file__).resolve().parents[1] / ".env"
@@ -36,14 +37,29 @@ class Settings:
         self.API_HOST: str = os.environ.get("API_HOST", "github")
         # Concurrency limit for async graph runs
         self.MAX_CONCURRENT_RUNS: int = int(os.environ.get("MAX_CONCURRENT_RUNS", "4"))
+        # Azure Blob Storage settings
+        self.AZURE_STORAGE_CONNECTION_STRING: str | None = os.environ.get("AZURE_STORAGE_CONNECTION_STRING")
+        self.AZURE_STORAGE_CONTAINER: str = os.environ.get("AZURE_STORAGE_CONTAINER", "echovoice-uploads")
 
     @property
     def use_db(self) -> bool:
+        """Indicate whether a database is configured for use."""
         return bool(self.DATABASE_URL)
 
     @property
     def max_concurrent_runs(self) -> int:
+        """Get the maximum number of concurrent runs allowed."""
         return int(self.MAX_CONCURRENT_RUNS)
+
+    @property
+    def azure_storage_connection_string(self) -> str | None:
+        """Get the Azure Storage connection string."""
+        return self.AZURE_STORAGE_CONNECTION_STRING
+
+    @property
+    def azure_storage_container(self) -> str:
+        """Get the Azure Storage container name."""
+        return self.AZURE_STORAGE_CONTAINER
 
 
 # Single shared settings instance for importers to use (import-time safe)

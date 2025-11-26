@@ -4,8 +4,9 @@ Revision ID: 0001_create_segments
 Revises: 
 Create Date: 2025-11-24
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '0001_create_segments'
@@ -15,6 +16,11 @@ depends_on = None
 
 
 def upgrade() -> None:
+    """Create the initial `segmentmodel` table.
+
+    This migration creates a minimal table used to store segment entries
+    when running with a Postgres backend.
+    """
     op.create_table(
         'segmentmodel',
         sa.Column('id', sa.String(), primary_key=True, nullable=False),
@@ -26,4 +32,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Drop the `segmentmodel` table created in the upgrade step."""
     op.drop_table('segmentmodel')

@@ -1,3 +1,10 @@
+"""Graph-related HTTP routes exposed to the frontend.
+
+This module exposes endpoints to read and write the editable graph
+configuration, execute runs, query run status/logs, and validate/commit
+graph configurations.
+"""
+
 from __future__ import annotations
 
 import uuid
@@ -15,6 +22,11 @@ router = APIRouter()
 
 @router.get("/api/graph", response_model=GraphSummary)
 async def get_graph() -> GraphSummary:
+    """Return a small summary of the available graph and its node names.
+
+    The summary is intentionally lightweight and used by the frontend to
+    populate editor lists and selection widgets.
+    """
     try:
         nodes = storage.default_segments_from_graph()
         node_names = [s["name"] for s in nodes]
@@ -25,12 +37,17 @@ async def get_graph() -> GraphSummary:
 
 @router.get("/api/graph/config")
 async def get_graph_config() -> Dict[str, Any]:
+    """Return the persisted graph configuration JSON.
+
+    The configuration is stored on disk and editable from the frontend.
+    """
     cfg = storage.load_graph_config()
     return cfg
 
 
 @router.put("/api/graph/config")
 async def put_graph_config(payload: Dict[str, Any]):
+    """Validate and persist the provided graph configuration JSON."""
     if not isinstance(payload, dict) or "nodes" not in payload or "edges" not in payload:
         raise HTTPException(status_code=400, detail="Invalid graph config payload")
     try:
@@ -43,6 +60,11 @@ async def put_graph_config(payload: Dict[str, Any]):
 
 @router.post("/api/graph/execute")
 async def execute_graph(request: Dict[str, Any]):
+    """Start execution of the graph using the provided `run_request` payload.
+
+    If `async` is true the run is queued and a `run_id` is returned. Otherwise the
+    execution runs synchronously and the result is returned.
+    """
     run_req = request.get("run_request") if isinstance(request, dict) else None
     if run_req is None:
         raise HTTPException(status_code=400, detail="Missing 'run_request' payload")
@@ -59,6 +81,7 @@ async def execute_graph(request: Dict[str, Any]):
 
 @router.delete("/api/graph/execute/{run_id}/cancel")
 async def cancel_execute(run_id: str):
+    """Request cancellation for an active or queued run by `run_id`."""
     ok = runner.cancel_run(run_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Run not found or already finished")
@@ -68,6 +91,7 @@ async def cancel_execute(run_id: str):
 
 @router.get("/api/graph/execute/{run_id}/status")
 async def get_execute_status(run_id: str):
+    """Return the current status and metadata for a run identified by `run_id`."""
     s = runner.get_run_status(run_id)
     if s is None:
         raise HTTPException(status_code=404, detail="Run not found")
@@ -76,6 +100,7 @@ async def get_execute_status(run_id: str):
 
 @router.get("/api/graph/execute/{run_id}/logs")
 async def get_execute_logs(run_id: str):
+    """Return accumulated logs for a given run id."""
     s = runner.get_run_status(run_id)
     if s is None:
         raise HTTPException(status_code=404, detail="Run not found")
@@ -84,6 +109,7 @@ async def get_execute_logs(run_id: str):
 
 @router.post("/api/graph/validate", response_model=ValidationResult)
 async def validate_graph() -> ValidationResult:
+    """Run basic validation over enabled segments and their priorities."""
     segments = storage.load_segments()
     errors: List[str] = []
     if not any(s.get("enabled") for s in segments):
@@ -102,6 +128,7 @@ async def validate_graph() -> ValidationResult:
 
 @router.post("/api/graph/validate-config", response_model=ValidationResult)
 async def validate_graph_config() -> ValidationResult:
+    """Validate the persisted graph configuration for importable callables and cycles."""
     cfg = storage.load_graph_config()
     nodes = cfg.get("nodes", [])
     edges = cfg.get("edges", [])
@@ -173,6 +200,7 @@ async def validate_graph_config() -> ValidationResult:
 
 @router.post("/api/graph/commit")
 async def commit_graph(message: str | None = None):
+    """Snapshot current segments to a versioned file and broadcast the commit."""
     segments = storage.load_segments()
     path = storage.snapshot_segments(segments, message=message)
     await manager.broadcast({"type": "graph.committed", "path": str(path)})

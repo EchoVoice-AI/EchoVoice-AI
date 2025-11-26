@@ -29,7 +29,6 @@ def rfm_segmenter(state: GraphState) -> Dict[str, Any]:
         A dict with `raw_segmentation_data` keyed by the segment type.
     """
     # --- SIMULATE RFM CALCULATION / LLM SEGMENTATION ---
-    segment_type = "rfm"
 
     # Example logic (placeholder): determine an RFM label and confidence.
     # If the campaign explicitly signals retention/churn, prefer a retention candidate.

@@ -4,8 +4,9 @@ Revision ID: 0002_create_runs
 Revises: 0001_create_segments
 Create Date: 2025-11-25
 """
-from alembic import op
 import sqlalchemy as sa
+
+from alembic import op
 
 # revision identifiers, used by Alembic.
 revision = '0002_create_runs'
@@ -15,6 +16,12 @@ depends_on = None
 
 
 def upgrade() -> None:
+    """Create the `runmodel` table for persisted run metadata if missing.
+
+    The migration is idempotent and will skip creation when the table
+    already exists (useful for local development or when the table was
+    created out-of-band).
+    """
     conn = op.get_bind()
     inspector = sa.inspect(conn)
     if not inspector.has_table('runmodel'):
@@ -31,4 +38,5 @@ def upgrade() -> None:
 
 
 def downgrade() -> None:
+    """Drop the `runmodel` table created in the upgrade step."""
     op.drop_table('runmodel')

@@ -1,4 +1,4 @@
--e git+https://github.com/EchoVoice-AI/EchoVoice-AI.git@d4999f14a8df73bb305f9586f0919d2a78248278#egg=agent&subdirectory=backend
+-e git+https://github.com/EchoVoice-AI/EchoVoice-AI.git@2ff0886acd8980c7f1bb5086c90ce8165ff7239c#egg=agent&subdirectory=backend
 alembic==1.17.2
 annotated-doc==0.0.4
 annotated-types==0.7.0
@@ -68,6 +68,7 @@ PyJWT==2.10.1
 pytest==9.0.1
 pytest-asyncio==1.3.0
 python-dotenv==1.2.1
+python-multipart==0.0.20
 PyYAML==6.0.3
 regex==2025.11.3
 requests==2.32.5

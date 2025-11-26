@@ -26,9 +26,21 @@ API_HOST = os.getenv("API_HOST", "github")
 
 # --- LangSmith Placeholder (to prevent import errors) ---
 # NOTE: In a real system, replace this with 'from services.langsmith_monitor import ...'
-def start_run(*args, **kwargs): return None
-def log_event(*args, **kwargs): pass
-def finish_run(*args, **kwargs): pass
+def start_run(*args, **kwargs):
+    """Start a LangSmith/monitoring run (placeholder no-op in local dev)."""
+    return None
+
+
+def log_event(*args, **kwargs):
+    """Log an event to the monitoring system (placeholder no-op)."""
+    pass
+
+
+def finish_run(*args, **kwargs):
+    """Finish a LangSmith run and record outputs (placeholder no-op)."""
+    pass
+
+
 LANGSMITH_ENABLED = False
 
 

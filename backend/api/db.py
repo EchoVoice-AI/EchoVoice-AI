@@ -9,7 +9,6 @@ is not configured via the environment.
 from __future__ import annotations
 
 import datetime
-import json
 import logging
 import os
 from typing import List
