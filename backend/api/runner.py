@@ -15,6 +15,7 @@ from __future__ import annotations
 
 import asyncio
 import importlib
+import logging
 import uuid
 from typing import Any, Dict
 
@@ -34,6 +35,9 @@ from . import storage
 from .config import SETTINGS
 from .ws import manager
 
+# Module logger for run lifecycle events
+logger = logging.getLogger(__name__)
+
 # In-memory run store for quick status/log access. Suitable for dev only.
 EXEC_RUNS: Dict[str, Dict[str, Any]] = {}
 RUN_TASKS: Dict[str, asyncio.Task] = {}
@@ -47,6 +51,7 @@ def _init_run(run_id: str, initial_state: Dict[str, Any]) -> None:
         "result": None,
         "state": initial_state,
     }
+    logger.debug("Initialized run %s (queued)", run_id)
 
 
 def _resolve_callable_from_string(path: str):
@@ -105,6 +110,7 @@ async def run_graph(initial_state: Dict[str, Any], run_id: str | None = None) ->
     if run_id not in EXEC_RUNS:
         _init_run(run_id, initial_state)
     EXEC_RUNS[run_id]["status"] = "running"
+    logger.info("Run %s started", run_id)
     await manager.broadcast({"type": "execution.started", "run_id": run_id, "state": initial_state})
     # persist status if DB enabled
     try:
@@ -175,10 +181,12 @@ async def run_graph(initial_state: Dict[str, Any], run_id: str | None = None) ->
     processed = set()
 
     async def _run_and_broadcast(name, fn):
+        logger.debug("Run %s: node %s starting", run_id, name)
         await manager.broadcast({"type": "execution.node.started", "run_id": run_id, "node": name})
         out = await _invoke_node(fn, state, name)
         if isinstance(out, dict):
             state.update(out)
+        logger.debug("Run %s: node %s finished", run_id, name)
         await manager.broadcast({"type": "execution.node.finished", "run_id": run_id, "node": name, "output": out})
         EXEC_RUNS[run_id]["logs"].append({"node": name, "output": out})
         # persist log to DB when available
@@ -261,6 +269,7 @@ async def run_graph(initial_state: Dict[str, Any], run_id: str | None = None) ->
         except Exception:
             pass
 
+        logger.info("Run %s finished", run_id)
         await manager.broadcast({"type": "execution.finished", "run_id": run_id, "final_state": state})
         # After finishing, attempt to start queued runs if any
         try:
@@ -294,6 +303,7 @@ async def run_graph(initial_state: Dict[str, Any], run_id: str | None = None) ->
                 storage._db.update_run_status(run_id, "failed")
         except Exception:
             pass
+        logger.exception("Run %s failed: %s", run_id, exc)
         await manager.broadcast({"type": "execution.error", "run_id": run_id, "error": str(exc)})
         try:
             if getattr(storage, "USE_DB", False) and getattr(storage, "_db", None) is not None:
@@ -315,10 +325,12 @@ def start_async_run(initial_state: Dict[str, Any], run_id: str | None = None) ->
             active = storage._db.count_active_runs()
             # persist run as queued or running depending on capacity
             if active >= int(max_conc):
+                logger.info("Run %s queued (active=%s, max=%s)", run_id, active, max_conc)
                 storage._db.create_run(run_id, initial_state, status="queued")
                 EXEC_RUNS[run_id]["status"] = "queued"
                 return run_id
             else:
+                logger.info("Run %s starting immediately (active=%s, max=%s)", run_id, active, max_conc)
                 storage._db.create_run(run_id, initial_state, status="running")
     except Exception:
         # fallback to in-memory if DB helpers fail
@@ -343,6 +355,7 @@ def cancel_run(run_id: str) -> bool:
         meta = EXEC_RUNS.get(run_id)
         if meta and meta.get("status") not in ("finished", "failed", "cancelled"):
             EXEC_RUNS[run_id]["status"] = "cancelled"
+            logger.info("Run %s marked cancelled (no task)", run_id)
             try:
                 if getattr(storage, "USE_DB", False) and getattr(storage, "_db", None) is not None:
                     storage._db.update_run_status(run_id, "cancelled")
@@ -361,6 +374,7 @@ def cancel_run(run_id: str) -> bool:
     # request cancellation
     task.cancel()
     EXEC_RUNS[run_id]["status"] = "cancelling"
+    logger.info("Cancellation requested for run %s", run_id)
     try:
         if getattr(storage, "USE_DB", False) and getattr(storage, "_db", None) is not None:
             storage._db.update_run_status(run_id, "cancelling")
@@ -381,9 +395,11 @@ def _maybe_start_queued_runs() -> None:
         max_conc = getattr(SETTINGS, "max_concurrent_runs", 4)
         active = storage._db.count_active_runs()
         capacity = int(max_conc) - int(active)
+        logger.debug("Dispatcher: active=%s max=%s capacity=%s", active, max_conc, capacity)
         if capacity <= 0:
             return
         queued = storage._db.get_queued_runs(limit=capacity)
+        logger.info("Dispatcher starting up to %s queued runs", len(queued))
         for q in queued:
             rid = q.get("id")
             payload = q.get("payload", {})
@@ -391,17 +407,20 @@ def _maybe_start_queued_runs() -> None:
             try:
                 storage._db.update_run_status(rid, "running")
             except Exception:
-                pass
+                logger.exception("Failed to update run status to running for %s", rid)
             # schedule task
             if rid not in RUN_TASKS and EXEC_RUNS.get(rid) is None:
+                logger.info("Dispatcher scheduling run %s", rid)
                 _init_run(rid, payload)
                 t = asyncio.create_task(run_graph(payload, run_id=rid))
                 RUN_TASKS[rid] = t
+
                 def _cleanup2(tk: asyncio.Task, runid=rid):
                     RUN_TASKS.pop(runid, None)
+
                 t.add_done_callback(_cleanup2)
     except Exception:
-        pass
+        logger.exception("Dispatcher encountered an error while starting queued runs")
 
 
 def get_run_status(run_id: str) -> Dict[str, Any] | None:

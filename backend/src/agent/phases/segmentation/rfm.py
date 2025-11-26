@@ -43,7 +43,8 @@ def rfm_segmenter(state: GraphState) -> Dict[str, Any]:
     else:
         # Fallback placeholder behavior
         segment_label = "High Engagement, Low Spend"
-        confidence_score = 0.75
+        # Lower default confidence so profile/intent can win when appropriate
+        confidence_score = 0.4
         justification = (
             "This user is classified as a 'High Engagement, Low Spend' RFM segment. "
             "They interact frequently with our content but their average order value is below average. "

@@ -22,13 +22,22 @@ def intent_segmenter(state: GraphState) -> Dict[str, Any]:
     phase-1 segmentation nodes.
     """
     segment_type = "intent"
-    segment_label = "clarification"
-    confidence_score = 0.88
-    justification = (
-        "User asked a clarifying question or requested more information. "
-        "Intent extracted indicates the user seeks factual clarification; "
-        "responses should be concise and evidence-backed."
-    )
+    # If the user message is empty or very short, intent confidence should be low
+    user_text = (state.get("user_message") or "") if isinstance(state, dict) else ""
+    if not user_text or not user_text.strip():
+        segment_label = "clarification"
+        confidence_score = 0.2
+        justification = (
+            "No explicit user query detected; intent extraction is low-confidence."
+        )
+    else:
+        segment_label = "clarification"
+        confidence_score = 0.88
+        justification = (
+            "User asked a clarifying question or requested more information. "
+            "Intent extracted indicates the user seeks factual clarification; "
+            "responses should be concise and evidence-backed."
+        )
 
     logger.info("Intent segmentation complete: %s (%.2f)", segment_label, confidence_score)
 
