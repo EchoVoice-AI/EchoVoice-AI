@@ -152,6 +152,15 @@ export const navData: NavSectionProps['data'] = [
           { title: 'Offers List', path: paths.dashboard.offers.list },
         ],
       },
+      {
+        title: 'Data Sources',
+        path: paths.dashboard.dataSources.root,
+        icon: ICONS.user,
+        children: [
+          { title: 'Data Sources Overview', path: paths.dashboard.dataSources.root },
+          { title: 'Data Sources Details', path: paths.dashboard.dataSources.details('1') },
+        ],
+      },
     ],
   },
 ];

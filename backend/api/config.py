@@ -34,10 +34,16 @@ class Settings:
         self.DATABASE_URL: str | None = os.environ.get("DATABASE_URL")
         self.LANGSMITH_API_KEY: str | None = os.environ.get("LANGSMITH_API_KEY")
         self.API_HOST: str = os.environ.get("API_HOST", "github")
+        # Concurrency limit for async graph runs
+        self.MAX_CONCURRENT_RUNS: int = int(os.environ.get("MAX_CONCURRENT_RUNS", "4"))
 
     @property
     def use_db(self) -> bool:
         return bool(self.DATABASE_URL)
+
+    @property
+    def max_concurrent_runs(self) -> int:
+        return int(self.MAX_CONCURRENT_RUNS)
 
 
 # Single shared settings instance for importers to use (import-time safe)

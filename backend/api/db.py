@@ -8,6 +8,7 @@ is not configured via the environment.
 
 from __future__ import annotations
 
+import datetime
 import json
 import logging
 import os
@@ -152,3 +153,119 @@ def replace_all_segments(segments: List[dict]) -> None:
                 payload["meta"] = payload.pop("metadata")
             session.add(SegmentModel(**payload))
         session.commit()
+
+
+class RunModel(SQLModel, table=True):
+    """Persisted run metadata for async/sync executions.
+
+    Stores the `payload` (the run input), `result`, `logs` as JSON and
+    `status` to coordinate queued/running/finished runs.
+    """
+
+    id: str = Field(primary_key=True)
+    status: str = Field(default="queued")
+    created_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+    updated_at: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
+    payload: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
+    result: dict = Field(default_factory=dict, sa_column=Column(SA_JSON))
+    logs: list = Field(default_factory=list, sa_column=Column(SA_JSON))
+
+    __table_args__ = {"extend_existing": True}
+
+
+def create_run(run_id: str, payload: dict, status: str = "queued") -> None:
+    """Create a persisted run record."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        r = RunModel(id=run_id, status=status, payload=payload)
+        session.add(r)
+        session.commit()
+
+
+def update_run_status(run_id: str, status: str) -> None:
+    """Update status for an existing run record."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        r = session.get(RunModel, run_id)
+        if r is None:
+            return
+        r.status = status
+        r.updated_at = datetime.datetime.utcnow()
+        session.add(r)
+        session.commit()
+
+
+def append_run_log(run_id: str, log_item: dict) -> None:
+    """Append a single log entry to a run's logs JSON array."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        r = session.get(RunModel, run_id)
+        if r is None:
+            return
+        logs = r.logs or []
+        logs.append(log_item)
+        r.logs = logs
+        r.updated_at = datetime.datetime.utcnow()
+        session.add(r)
+        session.commit()
+
+
+def set_run_result(run_id: str, result: dict) -> None:
+    """Set the final result JSON for a run and update timestamp."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        r = session.get(RunModel, run_id)
+        if r is None:
+            return
+        r.result = result
+        r.updated_at = datetime.datetime.utcnow()
+        session.add(r)
+        session.commit()
+
+
+def get_run(run_id: str) -> dict | None:
+    """Retrieve a persisted run record as a dict, or None if missing."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        r = session.get(RunModel, run_id)
+        if r is None:
+            return None
+        d = r.dict()
+        return d
+
+
+def list_runs(status: str | None = None, limit: int = 100) -> List[dict]:
+    """List persisted runs optionally filtered by status."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        q = select(RunModel)
+        if status:
+            q = q.where(RunModel.status == status)
+        rows = session.exec(q).all()
+        return [r.dict() for r in rows][:limit]
+
+
+def count_active_runs() -> int:
+    """Return count of runs currently in running/cancelling states."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        q = select(RunModel).where(RunModel.status.in_(["running", "cancelling"]))
+        rows = session.exec(q).all()
+        return len(rows)
+
+
+def get_queued_runs(limit: int = 10) -> List[dict]:
+    """Return queued runs ordered by creation time (oldest first)."""
+    if engine is None:
+        raise RuntimeError("DATABASE_URL not configured")
+    with Session(engine) as session:
+        q = select(RunModel).where(RunModel.status == "queued").order_by(RunModel.created_at)
+        rows = session.exec(q).all()
+        return [r.dict() for r in rows][:limit]

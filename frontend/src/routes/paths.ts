@@ -293,7 +293,12 @@ export const paths = {
         edit: `${ROOTS.DASHBOARD}/tour/${MOCK_ID}/edit`,
       },
     },
+    dataSources: {
+    root: `${ROOTS.DASHBOARD}/data-sources`,
+    details: (id: string) => `${ROOTS.DASHBOARD}/data-sources/${id}`,
   },
+  },
+  
 
   // product
   product: {
