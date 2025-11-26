@@ -9,7 +9,7 @@ from backend.services.logger import get_logger
 from .routers.health import router as health_router
 from .routers.orchestrator import router as orchestrator_router
 from .routers.media import router as media_router # added import for media router
-
+from .routers.hitl import router as hitl_router # added import for hitl router
 logger = get_logger('orchestrator')
 app = FastAPI(title='EchoVoice-AI Orchestrator')
 
@@ -29,6 +29,7 @@ app.add_middleware(
 app.include_router(health_router)
 app.include_router(orchestrator_router)
 app.include_router(media_router)  # included media router
+app.include_router(hitl_router)  # included hitl router
 
 # Mount debug router only when explicitly enabled in environment (dev only)
 if is_debug_enabled():
