@@ -1,4 +1,4 @@
-# RAG chat: Using reasoning models
+# EchoVoice: Using reasoning models
 
 This repository includes an optional feature that uses reasoning models to generate responses based on retrieved content. These models spend more time processing and understanding the user's request.
 

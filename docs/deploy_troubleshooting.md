@@ -1,6 +1,6 @@
 # 🚀 **EchoVoice: Customer Personalization Orchestrator**: Troubleshooting deployment
 
-If you are experiencing an error when deploying the RAG chat solution using the [deployment steps](../README.md#deploying), this guide will help you troubleshoot common issues.
+If you are experiencing an error when deploying the EchoVoice solution using the [deployment steps](../README.md#deploying), this guide will help you troubleshoot common issues.
 
 1. You're attempting to create resources in regions not enabled for Azure OpenAI (e.g. East US 2 instead of East US), or where the model you're trying to use isn't enabled. See [this matrix of model availability](https://aka.ms/oai/models).
 

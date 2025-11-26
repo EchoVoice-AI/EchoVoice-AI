@@ -1,4 +1,4 @@
-# RAG chat: Productionizing the app
+# EchoVoice: Productionizing the app
 
 This sample is designed to be a starting point for your own production application,
 but you should do a thorough review of the security and performance before deploying

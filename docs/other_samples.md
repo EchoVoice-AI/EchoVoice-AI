@@ -1,6 +1,6 @@
-# RAG chat: Alternative RAG chat samples
+# EchoVoice: Alternative retrieval chat samples
 
-There are an increasingly large number of ways to build RAG chat apps.
+There are an increasingly large number of ways to build retrieval-based chat apps.
 
 * [Most similar to this repo](#most-similar-to-this-repo)
 * [azurechat](#azurechat)
@@ -14,7 +14,7 @@ Inspired by this repo, there are similar RAG chat apps for other languages:
 * [**.NET**](https://aka.ms/azai/net/code)
 * [**Java**](https://aka.ms/azai/java/code)
 
-They do not all support the same features as this repo, but they provide a good starting point for building a RAG chat app in your preferred language.
+They do not all support the same features as this repo, but they provide a good starting point for building a retrieval-based chat app in your preferred language.
 
 ## azurechat
 
@@ -52,14 +52,14 @@ Technology comparison:
 
 ## sample-app-aoai-chatGPT
 
-Another popular repository for this use case is:
+[Another popular repository for this use case is:]
 [https://github.com/Microsoft/sample-app-aoai-chatGPT/](https://github.com/Microsoft/sample-app-aoai-chatGPT/)
 
 That repository is designed for use by customers using Azure OpenAI studio and Azure Portal for setup. It also includes `azd` support for folks who want to deploy it completely from scratch.
 
 The primary differences:
 
-* This repository includes multiple RAG (retrieval-augmented generation) approaches that chain the results of multiple API calls (to Azure OpenAI and ACS) together in different ways. The other repository uses only the built-in data sources option for the ChatCompletions API, which uses a RAG approach on the specified ACS index. That should work for most uses, but if you needed more flexibility, this sample may be a better option.
+* This repository includes multiple retrieval (retrieval-augmented generation / RAG) approaches that chain the results of multiple API calls (to Azure OpenAI and ACS) together in different ways. The other repository uses only the built-in data sources option for the ChatCompletions API, which uses a retrieval approach on the specified ACS index. That should work for most uses, but if you needed more flexibility, this sample may be a better option.
 * This repository is also a bit more experimental in other ways, since it's not tied to the Azure OpenAI Studio like the other repository.
 
 Feature comparison:

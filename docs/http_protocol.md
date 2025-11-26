@@ -10,7 +10,7 @@ Table of contents:
   - [HTTP requests to chat app endpoints](#http-requests-to-chat-app-endpoints)
     - [Usage example](#usage-example)
     - [Request context properties](#request-context-properties)
-  - [HTTP responses from RAG chat app endpoints](#http-responses-from-rag-chat-app-endpoints)
+    - [HTTP responses from EchoVoice chat app endpoints](#http-responses-from-echovoice-chat-app-endpoints)
     - [Non-streaming response](#non-streaming-response)
       - [Successful response](#successful-response)
       - [Error response](#error-response)
@@ -25,13 +25,13 @@ Table of contents:
 All requests use the POST method, with the following headers:
 
 - `Content-Type: application/json`
-- `Authorization: Bearer <ID token>`: _Optional._ For authentication, if the app is deployed with [user login enabled](./login_and_acl.md)
+-- `Authorization: Bearer <ID token>`: _Optional._ For authentication, if the app is deployed with [user login enabled](./login_and_acl.md)
 
 The path is `chat` for a non-streaming request and `chat/stream` for a streaming request.
 
 The body of the request contains these properties, in JSON format:
 
-- `"messages"`: A list of messages, each containing "content" and "role", where "role" may be "assistant" or "user". When triggered from the "Ask" tab (single-turn RAG), the list will contain a single message, whereas requests from the "Chat" tab (multi-turn RAG) may contain multiple messages.
+- `"messages"`: A list of messages, each containing "content" and "role", where "role" may be "assistant" or "user". When triggered from the "Ask" tab (single-turn retrieval), the list will contain a single message, whereas requests from the "Chat" tab (multi-turn retrieval) may contain multiple messages.
 - `"session_state"`: _Optional_. An object containing the "memory" for the chat app, such as the session ID for chat history storage.
 - `"context"`: _Optional_. An object containing any additional options for the request, such as the `temperature` to use for the LLM. See below for supported options.
 
@@ -84,7 +84,7 @@ Example of the overrides object:
 }
 ```
 
-## HTTP responses from RAG chat app endpoints
+## HTTP responses from EchoVoice chat app endpoints
 
 The HTTP response is JSON for a non-streaming response, or [newline-delimited JSON](https://jsonlines.org/) ("NDJSON"/"jsonlines") for a streaming response.
 

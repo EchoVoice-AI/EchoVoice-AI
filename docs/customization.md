@@ -4,7 +4,7 @@
 
 > **Tip:** We recommend using GitHub Copilot Agent mode when adding new features or making code changes. This project includes an [AGENTS.md](../AGENTS.md) file that guides Copilot to generate code following project conventions.
 
-This guide provides more details for customizing the RAG chat app.
+This guide provides more details for customizing the EchoVoice Customer Personalization orchestrator.
 
 - [🚀 **EchoVoice**: Customizing the app](#-echovoice-customizing-the-app)
   - [Using your own data](#using-your-own-data)
@@ -39,7 +39,7 @@ The backend is built using [FastAPI](https://fastapi.tiangolo.com/), a Python fr
 
 ### Chat/Ask approaches
 
-Typically, the primary backend code you'll want to customize is the `app/backend/approaches` folder, which contains the classes powering the Chat and Ask tabs. Each class uses a different RAG (Retrieval Augmented Generation) approach, which include system messages that should be changed to match your data
+Typically, the primary backend code you'll want to customize is the `app/backend/approaches` folder, which contains the classes powering the Chat and Ask tabs. Each class uses a different text-target retrieval approach (a form of Retrieval-Augmented Generation), which includes system messages that should be changed to match your data
 
 #### Chat approach
 
@@ -53,7 +53,7 @@ The prompts are currently tailored to the sample data since they start with "Ass
 
 ##### Chat with multimodal feature
 
-If you followed the instructions in [the multimodal guide](multimodal.md) to enable multimodal RAG,
+If you followed the instructions in [the multimodal guide](multimodal.md) to enable multimodal retrieval,
 there are several differences in the chat approach:
 
 1. **Query rewriting**: Unchanged.
@@ -73,7 +73,7 @@ The prompt for step 2 is currently tailored to the sample data since it starts w
 
 #### Ask with multimodal feature
 
-If you followed the instructions in [the multimodal guide](multimodal.md) to enable multimodal RAG,
+If you followed the instructions in [the multimodal guide](multimodal.md) to enable multimodal retrieval,
 there are several differences in the ask approach:
 
 1. **Search**: For this step, it also calculates a vector embedding for the user question using [the Azure AI Vision vectorize text API](https://learn.microsoft.com/azure/ai-services/computer-vision/how-to/image-retrieval#call-the-vectorize-text-api), and passes that to the Azure AI Search to compare against the image embedding fields in the indexed documents. For each matching document, it downloads each associated image from Azure Blob Storage and converts it to a base 64 encoding.
@@ -135,7 +135,7 @@ You can also try changing the ChatCompletion parameters, like temperature, to se
 
 ### Improving Azure AI Search results
 
-If the problem is with Azure AI Search (step 2 above), the first step is to check what search parameters you're using. Generally, the best results are found with hybrid search (text + vectors) plus the additional semantic re-ranking step, and that's what we've enabled by default. There may be some domains where that combination isn't optimal, however. Check out this blog post which [evaluates AI search strategies](https://techcommunity.microsoft.com/blog/azure-ai-services-blog/azure-ai-search-outperforming-vector-search-with-hybrid-retrieval-and-ranking-ca/3929167) for a better understanding of the differences, or watch this [RAG Deep Dive video on AI Search](https://www.youtube.com/watch?v=ugJy9QkgLYg).
+If the problem is with Azure AI Search (step 2 above), the first step is to check what search parameters you're using. Generally, the best results are found with a text-first hybrid search (text targets prioritized + vectors) plus the additional semantic re-ranking step, and that's what we've enabled by default. There may be some domains where that combination isn't optimal, however. Check out this blog post which [evaluates AI search strategies](https://techcommunity.microsoft.com/blog/azure-ai-services-blog/azure-ai-search-outperforming-vector-search-with-hybrid-retrieval-and-ranking-ca/3929167) for a better understanding of the differences, or watch this [RAG Deep Dive video on AI Search](https://www.youtube.com/watch?v=ugJy9QkgLYg).
 
 #### Configuring parameters in the app
 

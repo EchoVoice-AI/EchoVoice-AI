@@ -1,4 +1,4 @@
-# RAG chat: Monitoring with Application Insights
+# EchoVoice: Monitoring with Application Insights
 
 By default, deployed apps use Application Insights for the tracing of each request, along with the logging of errors.
 

@@ -1,6 +1,6 @@
 # 🚀 **EchoVoice:**: Application Architecture
 
-This document provides a detailed architectural overview of this application, a Retrieval Augmented Generation (RAG) application that creates a ChatGPT-like experience over your own documents. It combines Azure OpenAI Service for AI capabilities with Azure AI Search for document indexing and retrieval.
+This document provides a detailed architectural overview of this application — a Retrieval-Augmented Generation (RAG) application (EchoVoice text-target retrieval) that creates a ChatGPT-like experience over your own documents. It combines Azure OpenAI Service for AI capabilities with Azure AI Search for document indexing and retrieval.
 
 For getting started with the application, see the main [README](../README.md).
 

@@ -5,7 +5,7 @@
 
 EchoVoice is a **multi-agent AI personalization platform** designed for regulated industries. It delivers safe, on-brand, traceable customer messaging through a coordinated set of specialized agents working together inside a transparent and auditable orchestration pipeline.
 
-This repository provides a **prototype scaffold** for local development, including an orchestrator, agent suite, mock RAG data, and a frontend stub for auditability.
+This repository provides a **prototype scaffold** for local development, including an orchestrator, agent suite, mock retrieval (text-target) data, and a frontend stub for auditability.
 
 ---
 
@@ -34,7 +34,7 @@ This repository provides a **prototype scaffold** for local development, includi
 
 [📺 Watch a video overview of the app.](https://youtu.be/3acB0OWmLvM)
 
-This sample demonstrates a few approaches for creating ChatGPT-like experiences over your own data using the Retrieval Augmented Generation pattern. It uses Azure OpenAI Service to access a GPT model (gpt-4.1-mini), and Azure AI Search for data indexing and retrieval.
+This sample demonstrates a few approaches for creating ChatGPT-like experiences over your own data using the Retrieval-Augmented Generation (RAG) pattern — EchoVoice's text-target retrieval. It uses Azure OpenAI Service to access a GPT model (gpt-4.1-mini), and Azure AI Search for data indexing and retrieval.
 
 The repo includes sample data so it's ready to try end to end. In this sample application we use a fictitious company called Zava, and the experience allows its employees to ask questions about the benefits, internal policies, as well as job descriptions and roles.
 
@@ -51,7 +51,7 @@ The repo includes sample data so it's ready to try end to end. In this sample ap
 
 ### Architecture Diagram
 
-![RAG Architecture](docs/images/appcomponents.png)
+![EchoVoice Architecture](docs/images/appcomponents.png)
 
 ## Azure account requirements
 
@@ -252,7 +252,7 @@ You can find extensive documentation in the [docs](docs/README.md) folder:
 - [Safety evaluation](docs/safety_evaluation.md)
 - [Monitoring with Application Insights](docs/monitoring.md)
 - [Productionizing](docs/productionizing.md)
-- [Alternative RAG chat samples](docs/other_samples.md)
+- [Alternative retrieval chat samples](docs/other_samples.md)
 
 ### Resources
 

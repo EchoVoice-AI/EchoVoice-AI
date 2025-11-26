@@ -1,8 +1,8 @@
 # 🚀 **EchoVoice:**: Data ingestion
 
-The [echo-voice-ai](/) project can set up a full customerpersonalization orchastrator app on Azure AI Search and OpenAI so that you can chat on custom data, like internal enterprise data or domain-specific knowledge sets. For full instructions on setting up the project, consult the [main README](/README.md), and then return here for detailed instructions on the data ingestion component.
+The [echo-voice-ai](/) project can set up a full customer personalization orchastrator app on Azure AI Search and OpenAI so that you can chat on custom data, like internal enterprise data or domain-specific knowledge sets. For full instructions on setting up the project, consult the [main README](/README.md), and then return here for detailed instructions on the data ingestion component.
 
-The chat app provides two ways to ingest data: manual ingestion and cloud ingestion. Both approaches use the same code for processing the data, but the manual ingestion runs locally while cloud ingestion runs in Azure Functions as Azure AI Search custom skills.
+The EchoVoice orchestrator provides two ways to ingest data: manual ingestion and cloud ingestion. Both approaches use the same code for processing the data, but the manual ingestion runs locally while cloud ingestion runs in Azure Functions as Azure AI Search custom skills.
 
 - [🚀 **EchoVoice:**: Data ingestion](#-echovoice-data-ingestion)
   - [Supported document formats](#supported-document-formats)
@@ -81,7 +81,7 @@ First, figure placeholders in the page text are replaced with full HTML markup t
 
 Next, the combined text is split into chunks using a sentence-aware splitter that respects semantic boundaries. The default chunk size is approximately 1000 characters (roughly 400-500 tokens for English), with a 10% overlap between consecutive chunks to preserve context across boundaries. The splitter uses a sliding window approach, ensuring that sentences ending one chunk also start the next, which reduces the risk of losing important context at chunk boundaries.
 
-**Why chunk documents?** While Azure AI Search can index full documents, chunking is essential for the RAG pattern because it limits the amount of information sent to OpenAI, which has token limits for context windows. By breaking content into focused chunks, the system can retrieve and inject only the most relevant pieces of text into the LLM prompt, improving both response quality and cost efficiency.
+**Why chunk documents?** While Azure AI Search can index full documents, chunking is essential for the text-target retrieval pattern because it limits the amount of information sent to OpenAI, which has token limits for context windows. By breaking content into focused chunks (text targets), the system can retrieve and inject only the most relevant pieces of text into the LLM prompt, improving both response quality and cost efficiency.
 
 If needed, you can modify the chunking algorithm in `app/backend/prepdocslib/textsplitter.py`. For a deeper, diagram-rich explanation of how the splitter works (figures, recursion, merge heuristics, guarantees, and examples), see the [text splitter documentation](./textsplitter.md).
 

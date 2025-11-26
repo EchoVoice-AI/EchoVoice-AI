@@ -1,4 +1,4 @@
-# RAG chat: Support for multimodal documents
+# EchoVoice: Support for multimodal documents
 
 This repository includes an optional feature that uses multimodal embedding models and multimodal chat completion models
 to better handle documents that contain images, such as financial reports with charts and graphs.
@@ -6,7 +6,7 @@ to better handle documents that contain images, such as financial reports with c
 With this feature enabled, the data ingestion process will extract images from your documents
 using Document Intelligence, store the images in Azure Blob Storage, vectorize the images using the Azure AI Vision service, and store the image embeddings in the Azure AI Search index.
 
-During the RAG flow, the app will perform a multi-vector query using both text and image embeddings, and then send any images associated with the retrieved document chunks to the chat completion model for answering questions. This feature assumes that your chat completion model supports multimodal inputs, such as `gpt-4o`, `gpt-4o-mini`, `gpt-5`, or `gpt-5-mini`.
+During the EchoVoice retrieval flow, the app will perform a multi-vector query using both text and image embeddings, and then send any images associated with the retrieved document chunks to the chat completion model for answering questions. This feature assumes that your chat completion model supports multimodal inputs, such as `gpt-4o`, `gpt-4o-mini`, `gpt-5`, or `gpt-5-mini`.
 
 With this feature enabled, the following changes are made:
 
@@ -67,7 +67,7 @@ With this feature enabled, the following changes are made:
 
 ## Customize the multimodal approach
 
-You can customize the RAG flow approach with a few additional environment variables.
+You can customize the EchoVoice retrieval approach with a few additional environment variables.
 You can also modify those settings in the "Developer Settings" in the chat UI,
 to experiment with different options before committing to them.
 
@@ -79,13 +79,13 @@ By default, it will retrieve using both text and image embeddings.
 To disable retrieval with text embeddings, run:
 
 ```shell
-azd env set RAG_SEARCH_TEXT_EMBEDDINGS false
+azd env set ECHOVOICE_SEARCH_TEXT_TARGETS false
 ```
 
 To disable retrieval with image embeddings, run:
 
 ```shell
-azd env set RAG_SEARCH_IMAGE_EMBEDDINGS false
+azd env set ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS false
 ```
 
 Many developers may find that they can turn off image embeddings and still have high quality retrieval, since the text embeddings are based off text chunks that include figure descriptions.
@@ -97,16 +97,16 @@ Set variables to control whether the chat completion model will use text inputs,
 To disable text inputs, run:
 
 ```shell
-azd env set RAG_SEND_TEXT_SOURCES false
+azd env set ECHOVOICE_SEND_TEXT_SOURCES false
 ```
 
 To disable image inputs, run:
 
 ```shell
-azd env set RAG_SEND_IMAGE_SOURCES false
+azd env set ECHOVOICE_SEND_IMAGE_SOURCES false
 ```
 
-It is unlikely that you would want to turn off text sources, unless your RAG is based on documents that are 100% image-based.
+It is unlikely that you would want to turn off text sources, unless your EchoVoice retrieval is based on documents that are 100% image-based.
 However, you may want to turn off image inputs to save on token costs and improve performance,
 and you may still see good results with just text inputs, since the inputs contain the figure descriptions.
 

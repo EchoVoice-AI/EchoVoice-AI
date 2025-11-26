@@ -353,15 +353,15 @@ param azureContainerAppsWorkloadProfile string
 @allowed(['appservice', 'containerapps'])
 param deploymentTarget string = 'appservice'
 
-// RAG Configuration Parameters
-@description('Whether to use text embeddings for RAG search')
-param ragSearchTextEmbeddings bool = true
-@description('Whether to use image embeddings for RAG search')
-param ragSearchImageEmbeddings bool = true
-@description('Whether to send text sources to LLM for RAG responses')
-param ragSendTextSources bool = true
-@description('Whether to send image sources to LLM for RAG responses')
-param ragSendImageSources bool = true
+// EchoVoice configuration parameters
+@description('Whether to prioritize text targets in EchoVoice search')
+param echovoiceSearchTextTargets bool = true
+@description('Whether to use image embeddings for EchoVoice search')
+param echovoiceSearchImageEmbeddings bool = true
+@description('Whether to send text sources to LLM for EchoVoice responses')
+param echovoiceSendTextSources bool = true
+@description('Whether to send image sources to LLM for EchoVoice responses')
+param echovoiceSendImageSources bool = true
 @description('Whether to enable web sources for agentic retrieval')
 param useWebSource bool = false
 @description('Whether to enable SharePoint sources for agentic retrieval')
@@ -538,11 +538,11 @@ var appEnvVariables = {
   USE_MEDIA_DESCRIBER_AZURE_CU: useMediaDescriberAzureCU
   AZURE_CONTENTUNDERSTANDING_ENDPOINT: useMediaDescriberAzureCU ? contentUnderstanding.outputs.endpoint : ''
   RUNNING_IN_PRODUCTION: 'true'
-  // RAG Configuration
-  RAG_SEARCH_TEXT_EMBEDDINGS: ragSearchTextEmbeddings
-  RAG_SEARCH_IMAGE_EMBEDDINGS: ragSearchImageEmbeddings
-  RAG_SEND_TEXT_SOURCES: ragSendTextSources
-  RAG_SEND_IMAGE_SOURCES: ragSendImageSources
+  // EchoVoice configuration
+  ECHOVOICE_SEARCH_TEXT_TARGETS: echovoiceSearchTextTargets
+  ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS: echovoiceSearchImageEmbeddings
+  ECHOVOICE_SEND_TEXT_SOURCES: echovoiceSendTextSources
+  ECHOVOICE_SEND_IMAGE_SOURCES: echovoiceSendImageSources
   USE_WEB_SOURCE: useWebSource
   USE_SHAREPOINT_SOURCE: useSharePointSource
 }

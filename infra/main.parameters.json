@@ -341,17 +341,17 @@
     "useAgenticKnowledgeBase": {
       "value": "${USE_AGENTIC_KNOWLEDGEBASE=false}"
     },
-    "ragSearchTextEmbeddings": {
-      "value": "${RAG_SEARCH_TEXT_EMBEDDINGS=true}"
+    "echovoiceSearchTextTargets": {
+      "value": "${ECHOVOICE_SEARCH_TEXT_TARGETS=true}"
     },
-    "ragSearchImageEmbeddings": {
-      "value": "${RAG_SEARCH_IMAGE_EMBEDDINGS=true}"
+    "echovoiceSearchImageEmbeddings": {
+      "value": "${ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS=true}"
     },
-    "ragSendTextSources": {
-      "value": "${RAG_SEND_TEXT_SOURCES=true}"
+    "echovoiceSendTextSources": {
+      "value": "${ECHOVOICE_SEND_TEXT_SOURCES=true}"
     },
-    "ragSendImageSources": {
-      "value": "${RAG_SEND_IMAGE_SOURCES=true}"
+    "echovoiceSendImageSources": {
+      "value": "${ECHOVOICE_SEND_IMAGE_SOURCES=true}"
     },
     "useWebSource": {
       "value": "${USE_WEB_SOURCE=false}"

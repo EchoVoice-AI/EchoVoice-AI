@@ -1,3 +1,4 @@
+"""Backend application for EchoVoice AI chatbot service."""
 import dataclasses
 import io
 import json
@@ -59,6 +60,10 @@ from config import (
     CONFIG_CREDENTIAL,
     CONFIG_DEFAULT_REASONING_EFFORT,
     CONFIG_DEFAULT_RETRIEVAL_REASONING_EFFORT,
+    CONFIG_ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS,
+    CONFIG_ECHOVOICE_SEARCH_TEXT_TARGETS,
+    CONFIG_ECHOVOICE_SEND_IMAGE_SOURCES,
+    CONFIG_ECHOVOICE_SEND_TEXT_SOURCES,
     CONFIG_GLOBAL_BLOB_MANAGER,
     CONFIG_INGESTER,
     CONFIG_KNOWLEDGEBASE_CLIENT,
@@ -69,10 +74,6 @@ from config import (
     CONFIG_MULTIMODAL_ENABLED,
     CONFIG_OPENAI_CLIENT,
     CONFIG_QUERY_REWRITING_ENABLED,
-    CONFIG_RAG_SEARCH_IMAGE_EMBEDDINGS,
-    CONFIG_RAG_SEARCH_TEXT_EMBEDDINGS,
-    CONFIG_RAG_SEND_IMAGE_SOURCES,
-    CONFIG_RAG_SEND_TEXT_SOURCES,
     CONFIG_REASONING_EFFORT_ENABLED,
     CONFIG_SEARCH_CLIENT,
     CONFIG_SEMANTIC_RANKER_DEPLOYED,
@@ -115,6 +116,7 @@ mimetypes.add_type("text/css", ".css")
 
 @bp.route("/")
 async def index():
+    """Serve the index page."""
     return await bp.send_static_file("index.html")
 
 
@@ -122,24 +124,27 @@ async def index():
 # See https://github.com/AzureAD/microsoft-authentication-library-for-js/blob/dev/lib/msal-browser/docs/initialization.md#redirecturi-considerations for more information
 @bp.route("/redirect")
 async def redirect():
+    """Serve the redirect page."""
     return ""
 
 
 @bp.route("/favicon.ico")
 async def favicon():
+    """Serve the favicon."""
     return await bp.send_static_file("favicon.ico")
 
 
 @bp.route("/assets/<path:path>")
 async def assets(path):
+    """Serve static asset files."""
     return await send_from_directory(Path(__file__).resolve().parent / "static" / "assets", path)
 
 
 @bp.route("/content/<path>")
 @authenticated_path
 async def content_file(path: str, auth_claims: dict[str, Any]):
-    """
-    Serve content files from blob storage from within the app to keep the example self-contained.
+    """Serve content files from blob storage from within the app to keep the example self-contained.
+    
     *** NOTE *** if you are using app services authentication, this route will return unauthorized to all users that are not logged in
     if AZURE_ENFORCE_ACCESS_CONTROL is not set or false, logged in users can access all files regardless of access control
     if AZURE_ENFORCE_ACCESS_CONTROL is set to true, logged in users can only access files they have access to
@@ -185,6 +190,7 @@ async def content_file(path: str, auth_claims: dict[str, Any]):
 @bp.route("/ask", methods=["POST"])
 @authenticated
 async def ask(auth_claims: dict[str, Any]):
+    """Handle a single-turn question answering request."""
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
     request_json = await request.get_json()
@@ -201,7 +207,9 @@ async def ask(auth_claims: dict[str, Any]):
 
 
 class JSONEncoder(json.JSONEncoder):
+    """Custom JSON encoder for dataclasses and other types."""
     def default(self, o):
+        """Handle dataclass serialization."""
         if dataclasses.is_dataclass(o) and not isinstance(o, type):
             as_dict = dataclasses.asdict(o)
             if isinstance(o, DataPoints):
@@ -215,6 +223,7 @@ class JSONEncoder(json.JSONEncoder):
 
 
 async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str, None]:
+    """Format an async generator of dicts as NDJSON."""
     try:
         async for event in r:
             yield json.dumps(event, ensure_ascii=False, cls=JSONEncoder) + "\n"
@@ -226,6 +235,7 @@ async def format_as_ndjson(r: AsyncGenerator[dict, None]) -> AsyncGenerator[str,
 @bp.route("/chat", methods=["POST"])
 @authenticated
 async def chat(auth_claims: dict[str, Any]):
+    """Handle a chat request."""
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
     request_json = await request.get_json()
@@ -255,6 +265,7 @@ async def chat(auth_claims: dict[str, Any]):
 @bp.route("/chat/stream", methods=["POST"])
 @authenticated
 async def chat_stream(auth_claims: dict[str, Any]):
+    """Handle a streaming chat request."""
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
     request_json = await request.get_json()
@@ -287,12 +298,14 @@ async def chat_stream(auth_claims: dict[str, Any]):
 # Send MSAL.js settings to the client UI
 @bp.route("/auth_setup", methods=["GET"])
 def auth_setup():
+    """Send MSAL.js settings to the client UI."""
     auth_helper = current_app.config[CONFIG_AUTH_CLIENT]
     return jsonify(auth_helper.get_auth_setup_for_client())
 
 
 @bp.route("/config", methods=["GET"])
 def config():
+    """Serve configuration settings to the client UI."""
     return jsonify(
         {
             "showMultimodalOptions": current_app.config[CONFIG_MULTIMODAL_ENABLED],
@@ -311,10 +324,15 @@ def config():
             "showChatHistoryBrowser": current_app.config[CONFIG_CHAT_HISTORY_BROWSER_ENABLED],
             "showChatHistoryCosmos": current_app.config[CONFIG_CHAT_HISTORY_COSMOS_ENABLED],
             "showAgenticRetrievalOption": current_app.config[CONFIG_AGENTIC_KNOWLEDGEBASE_ENABLED],
-            "ragSearchTextEmbeddings": current_app.config[CONFIG_RAG_SEARCH_TEXT_EMBEDDINGS],
-            "ragSearchImageEmbeddings": current_app.config[CONFIG_RAG_SEARCH_IMAGE_EMBEDDINGS],
-            "ragSendTextSources": current_app.config[CONFIG_RAG_SEND_TEXT_SOURCES],
-            "ragSendImageSources": current_app.config[CONFIG_RAG_SEND_IMAGE_SOURCES],
+            "textTargetsSearchEnabled": current_app.config[CONFIG_ECHOVOICE_SEARCH_TEXT_TARGETS],
+            "imageSearchEmbeddingsEnabled": current_app.config[CONFIG_ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS],
+            "textTargetsSendSources": current_app.config[CONFIG_ECHOVOICE_SEND_TEXT_SOURCES],
+            "imageSendSources": current_app.config[CONFIG_ECHOVOICE_SEND_IMAGE_SOURCES],
+            # Backwards compatible keys (old names preserved)
+            "ragSearchTextEmbeddings": current_app.config[CONFIG_ECHOVOICE_SEARCH_TEXT_TARGETS],
+            "ragSearchImageEmbeddings": current_app.config[CONFIG_ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS],
+            "ragSendTextSources": current_app.config[CONFIG_ECHOVOICE_SEND_TEXT_SOURCES],
+            "ragSendImageSources": current_app.config[CONFIG_ECHOVOICE_SEND_IMAGE_SOURCES],
             "webSourceEnabled": current_app.config[CONFIG_WEB_SOURCE_ENABLED],
             "sharepointSourceEnabled": current_app.config[CONFIG_SHAREPOINT_SOURCE_ENABLED],
         }
@@ -323,6 +341,7 @@ def config():
 
 @bp.route("/speech", methods=["POST"])
 async def speech():
+    """Handle a speech synthesis request."""
     if not request.is_json:
         return jsonify({"error": "request must be json"}), 415
 
@@ -368,6 +387,7 @@ async def speech():
 @bp.post("/upload")
 @authenticated
 async def upload(auth_claims: dict[str, Any]):
+    """Handle a file upload request."""
     request_files = await request.files
     if "file" not in request_files:
         return jsonify({"message": "No file part in the request", "status": "failed"}), 400
@@ -388,6 +408,7 @@ async def upload(auth_claims: dict[str, Any]):
 @bp.post("/delete_uploaded")
 @authenticated
 async def delete_uploaded(auth_claims: dict[str, Any]):
+    """Delete an uploaded document for the current user."""
     request_json = await request.get_json()
     filename = request_json.get("filename")
     user_oid = auth_claims["oid"]
@@ -401,9 +422,11 @@ async def delete_uploaded(auth_claims: dict[str, Any]):
 @bp.get("/list_uploaded")
 @authenticated
 async def list_uploaded(auth_claims: dict[str, Any]):
-    """Lists the uploaded documents for the current user.
+    """List the uploaded documents for the current user.
+    
     Only returns files directly in the user's directory, not in subdirectories.
-    Excludes image files and the images directory."""
+    Excludes image files and the images directory.
+    """
     user_oid = auth_claims["oid"]
     adls_manager: AdlsBlobManager = current_app.config[CONFIG_USER_BLOB_MANAGER]
     files = await adls_manager.list_blobs(user_oid)
@@ -412,6 +435,7 @@ async def list_uploaded(auth_claims: dict[str, Any]):
 
 @bp.before_app_serving
 async def setup_clients():
+    """Set configuration values and clients before the app starts serving requests."""
     # Replace these with your own values, either in environment variables or directly here
     AZURE_STORAGE_ACCOUNT = os.environ["AZURE_STORAGE_ACCOUNT"]
     AZURE_STORAGE_CONTAINER = os.environ["AZURE_STORAGE_CONTAINER"]
@@ -471,10 +495,10 @@ async def setup_clients():
     AZURE_SPEECH_SERVICE_VOICE = os.getenv("AZURE_SPEECH_SERVICE_VOICE") or "en-US-AndrewMultilingualNeural"
 
     USE_MULTIMODAL = os.getenv("USE_MULTIMODAL", "").lower() == "true"
-    RAG_SEARCH_TEXT_EMBEDDINGS = os.getenv("RAG_SEARCH_TEXT_EMBEDDINGS", "true").lower() == "true"
-    RAG_SEARCH_IMAGE_EMBEDDINGS = os.getenv("RAG_SEARCH_IMAGE_EMBEDDINGS", "true").lower() == "true"
-    RAG_SEND_TEXT_SOURCES = os.getenv("RAG_SEND_TEXT_SOURCES", "true").lower() == "true"
-    RAG_SEND_IMAGE_SOURCES = os.getenv("RAG_SEND_IMAGE_SOURCES", "true").lower() == "true"
+    ECHOVOICE_SEARCH_TEXT_TARGETS = os.getenv("ECHOVOICE_SEARCH_TEXT_TARGETS", "true").lower() == "true"
+    ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS = os.getenv("ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS", "true").lower() == "true"
+    ECHOVOICE_SEND_TEXT_SOURCES = os.getenv("ECHOVOICE_SEND_TEXT_SOURCES", "true").lower() == "true"
+    ECHOVOICE_SEND_IMAGE_SOURCES = os.getenv("ECHOVOICE_SEND_IMAGE_SOURCES", "true").lower() == "true"
     USE_USER_UPLOAD = os.getenv("USE_USER_UPLOAD", "").lower() == "true"
     ENABLE_LANGUAGE_PICKER = os.getenv("ENABLE_LANGUAGE_PICKER", "").lower() == "true"
     USE_SPEECH_INPUT_BROWSER = os.getenv("USE_SPEECH_INPUT_BROWSER", "").lower() == "true"
@@ -711,10 +735,10 @@ async def setup_clients():
     current_app.config[CONFIG_CHAT_HISTORY_COSMOS_ENABLED] = USE_CHAT_HISTORY_COSMOS
     current_app.config[CONFIG_AGENTIC_KNOWLEDGEBASE_ENABLED] = USE_AGENTIC_KNOWLEDGEBASE
     current_app.config[CONFIG_MULTIMODAL_ENABLED] = USE_MULTIMODAL
-    current_app.config[CONFIG_RAG_SEARCH_TEXT_EMBEDDINGS] = RAG_SEARCH_TEXT_EMBEDDINGS
-    current_app.config[CONFIG_RAG_SEARCH_IMAGE_EMBEDDINGS] = RAG_SEARCH_IMAGE_EMBEDDINGS
-    current_app.config[CONFIG_RAG_SEND_TEXT_SOURCES] = RAG_SEND_TEXT_SOURCES
-    current_app.config[CONFIG_RAG_SEND_IMAGE_SOURCES] = RAG_SEND_IMAGE_SOURCES
+    current_app.config[CONFIG_ECHOVOICE_SEARCH_TEXT_TARGETS] = ECHOVOICE_SEARCH_TEXT_TARGETS
+    current_app.config[CONFIG_ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS] = ECHOVOICE_SEARCH_IMAGE_EMBEDDINGS
+    current_app.config[CONFIG_ECHOVOICE_SEND_TEXT_SOURCES] = ECHOVOICE_SEND_TEXT_SOURCES
+    current_app.config[CONFIG_ECHOVOICE_SEND_IMAGE_SOURCES] = ECHOVOICE_SEND_IMAGE_SOURCES
     current_app.config[CONFIG_WEB_SOURCE_ENABLED] = USE_WEB_SOURCE
     if AGENTIC_KNOWLEDGEBASE_REASONING_EFFORT == "minimal" and current_app.config[CONFIG_WEB_SOURCE_ENABLED]:
         raise ValueError("Web source cannot be used with minimal retrieval reasoning effort")
@@ -722,7 +746,7 @@ async def setup_clients():
 
     prompt_manager = PromptyManager()
 
-    # Set up the two default RAG approaches for /ask and /chat
+    # Set up the two default EchoVoice approaches for /ask and /chat
     # RetrieveThenReadApproach is used by /ask for single-turn Q&A
 
     current_app.config[CONFIG_ASK_APPROACH] = RetrieveThenReadApproach(
@@ -791,6 +815,7 @@ async def setup_clients():
 
 @bp.after_app_serving
 async def close_clients():
+    """Close clients after the app stops serving requests."""
     await current_app.config[CONFIG_SEARCH_CLIENT].close()
     await current_app.config[CONFIG_GLOBAL_BLOB_MANAGER].close_clients()
     if user_blob_manager := current_app.config.get(CONFIG_USER_BLOB_MANAGER):
@@ -799,6 +824,7 @@ async def close_clients():
 
 
 def create_app():
+    """Create and configure the Quart application."""
     app = Quart(__name__)
     app.register_blueprint(bp)
     app.register_blueprint(chat_history_cosmosdb_bp)

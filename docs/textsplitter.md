@@ -1,4 +1,4 @@
-# RAG Chat: Text splitting algorithm overview
+# EchoVoice: Text splitting algorithm overview
 
 This document explains the chunking logic implemented in the [data ingestion pipeline](./data_ingestion.md). The [splitter module](../app/backend/prepdocslib/textsplitter.py) contains both a `SimpleTextSplitter` (used only for JSON files) and a `SentenceTextSplitter` (used for all other formats). This document focuses on the `SentenceTextSplitter` since its approach is far more complicated, and it can be difficult to follow the code.
 
