@@ -19,7 +19,7 @@ urlFragment: azure-search-openai-demo-document-security
 
 # 🚀 **EchoVoice: Customer Personalization Orchestrator**: Setting up optional login and document level access control
 
-[📺 Watch: (RAG Deep Dive series) Login and access control](https://www.youtube.com/watch?v=GwEiYJgM8Vw)
+[📺 Watch: Retrieval Deep Dive — Login and access control](https://www.youtube.com/watch?v=GwEiYJgM8Vw)
 
 The [azure-search-openai-demo](/) project can set up a full EchoVoice deployment on Azure AI Search and OpenAI so that you can interact with custom data, like internal enterprise data or domain-specific knowledge sets. For full instructions on setting up the project, consult the [main README](/README.md), and then return here for detailed instructions on configuring login and access control.
 

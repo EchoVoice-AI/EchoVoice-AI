@@ -165,9 +165,9 @@ You can also use the `highlight` parameter to see what text is being matched in 
 
 ```json
 {
-    "search": "eye exams",
-    "highlight": "content"
-    ...
+  "search": "eye exams",
+  "highlight": "content"
+  ...
 }
 ```
 

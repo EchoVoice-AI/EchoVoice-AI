@@ -1,6 +1,6 @@
-# RAG chat: Sharing deployment environments
+# EchoVoice: Sharing deployment environments
 
-If you've deployed the RAG chat solution already following the steps in the [deployment guide](../README.md#deploying), you may want to share the environment with a colleague.
+If you've deployed the EchoVoice solution already following the steps in the [deployment guide](../README.md#deploying), you may want to share the environment with a colleague.
 Either you or they can follow these steps:
 
 1. Install the [Azure CLI](https://learn.microsoft.com/cli/azure/install-azure-cli)

@@ -269,7 +269,7 @@ Learn more in the [cloud ingestion guide](./data_ingestion.md#cloud-ingestion).
 
 ## Enabling client-side chat history
 
-[📺 Watch: (RAG Deep Dive series) Storing chat history](https://www.youtube.com/watch?v=1YiTFnnLVIA)
+[📺 Watch: Retrieval Deep Dive — Storing chat history](https://www.youtube.com/watch?v=1YiTFnnLVIA)
 
 This feature allows users to view the chat history of their conversation, stored in the browser using [IndexedDB](https://developer.mozilla.org/docs/Web/API/IndexedDB_API). That means the chat history will be available only on the device where the chat was initiated. To enable browser-stored chat history, run:
 
@@ -279,7 +279,7 @@ azd env set USE_CHAT_HISTORY_BROWSER true
 
 ## Enabling persistent chat history with Azure Cosmos DB
 
-[📺 Watch: (RAG Deep Dive series) Storing chat history](https://www.youtube.com/watch?v=1YiTFnnLVIA)
+[📺 Watch: Retrieval Deep Dive — Storing chat history](https://www.youtube.com/watch?v=1YiTFnnLVIA)
 
 This feature allows authenticated users to view the chat history of their conversations, stored in the server-side storage using [Azure Cosmos DB](https://learn.microsoft.com/azure/cosmos-db/).This option requires that authentication be enabled. The chat history will be persistent and accessible from any device where the user logs in with the same account. To enable server-stored chat history, run:
 
@@ -398,7 +398,7 @@ As discussed in more details in our [productionizing guide](./productionizing.md
 Fortunately, this repository is designed for easy integration with other repositories that create load balancers for OpenAI instances. For seamless integration instructions with this sample, please check:
 
 - [Scale Azure OpenAI for Python with Azure API Management](https://learn.microsoft.com/azure/developer/python/get-started-app-chat-scaling-with-azure-api-management)
-- [Scale Azure OpenAI for Python chat using RAG with Azure Container Apps](https://learn.microsoft.com/azure/developer/python/get-started-app-chat-scaling-with-azure-container-apps)
+- [Scale Azure OpenAI for Python chat using retrieval with Azure Container Apps](https://learn.microsoft.com/azure/developer/python/get-started-app-chat-scaling-with-azure-container-apps)
 
 ## Deploying with private endpoints
 

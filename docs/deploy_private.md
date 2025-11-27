@@ -19,7 +19,7 @@ urlFragment: azure-search-openai-demo-private-access
 
 # 🚀 **EchoVoice**: Deploying with private access
 
-[📺 Watch: (RAG Deep Dive series) Private network deployment](https://www.youtube.com/watch?v=08wtL1eB15g)
+[📺 Watch: Retrieval Deep Dive — Private network deployment](https://www.youtube.com/watch?v=08wtL1eB15g)
 
 The [echovoice-ai-demoo](/) project can set up a full Customer Personalization Orchestrator app on Azure AI Search and OpenAI so that you can chat on custom data, like internal enterprise data or domain-specific knowledge sets. For full instructions on setting up the project, consult the [main README](/README.md), and then return here for detailed instructions on configuring private endpoints.
 
