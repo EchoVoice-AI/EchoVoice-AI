@@ -70,7 +70,7 @@ Set-Location ../backend
 
 $port = 50505
 $hostname = "localhost"
-Start-Process -FilePath $venvPythonPath -ArgumentList "-m quart --app main:app run --port $port --host $hostname --reload" -Wait -NoNewWindow
+Start-Process -FilePath $venvPythonPath -ArgumentList "-m uvicorn main:app --port $port --host $hostname --reload" -Wait -NoNewWindow
 
 if ($LASTEXITCODE -ne 0) {
     Write-Host "Failed to start backend"

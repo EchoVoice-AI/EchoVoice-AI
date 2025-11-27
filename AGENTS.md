@@ -41,7 +41,7 @@ If necessary, edit this file to ensure it accurately reflects the current state 
       * app/backend/prepdocslib/textsplitter.py: Splits text into chunks using different strategies
     * app/backend/app.py: The main entry point for the backend application.
   * app/functions: Azure Functions used for cloud ingestion custom skills (document extraction, figure processing, text processing). Each function bundles a synchronized copy of `prepdocslib`; run `python scripts/copy_prepdocslib.py` to refresh the local copies if you modify the library.
-  * app/frontend: Contains the React frontend code, built with TypeScript, built with vite.
+  * app/frontend: Contains the React frontend code, built with TypeScript, built with NextJs.
     * app/frontend/src/api: Contains the API client code for communicating with the backend.
     * app/frontend/src/components: Contains the React components for the frontend.
     * app/frontend/src/locales: Contains the translation files for internationalization.
