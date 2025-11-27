@@ -1,10 +1,11 @@
+"""Approach base class and related data structures for handling search and OpenAI interactions."""
 import base64
 import json
 import re
 from abc import ABC
 from collections.abc import AsyncGenerator, Awaitable
 from dataclasses import asdict, dataclass, field
-from typing import Any, Optional, TypedDict, cast
+from typing import Any, TypedDict, cast
 
 from azure.search.documents.aio import SearchClient
 from azure.search.documents.knowledgebases.aio import KnowledgeBaseRetrievalClient
@@ -51,6 +52,7 @@ from prepdocslib.embeddings import ImageEmbeddings
 
 @dataclass
 class ActivityDetail:
+    """Activity detail for a retrieved document."""
     id: int
     number: int
     type: str
@@ -60,21 +62,23 @@ class ActivityDetail:
 
 @dataclass
 class Document:
-    id: Optional[str] = None
-    ref_id: Optional[str] = None  # Reference id from agentic retrieval (if applicable)
-    content: Optional[str] = None
-    category: Optional[str] = None
-    sourcepage: Optional[str] = None
-    sourcefile: Optional[str] = None
-    oids: Optional[list[str]] = None
-    groups: Optional[list[str]] = None
-    captions: Optional[list[QueryCaptionResult]] = None
-    score: Optional[float] = None
-    reranker_score: Optional[float] = None
-    activity: Optional[ActivityDetail] = None
-    images: Optional[list[dict[str, Any]]] = None
+    """Document result from search index."""
+    id: str | None = None
+    ref_id: str | None = None  # Reference id from agentic retrieval (if applicable)
+    content: str | None = None
+    category: str | None = None
+    sourcepage: str | None = None
+    sourcefile: str | None = None
+    oids: list[str] | None = None
+    groups: list[str] | None = None
+    captions: list[QueryCaptionResult] | None = None
+    score: float | None = None
+    reranker_score: float | None = None
+    activity: ActivityDetail | None = None
+    images: list[dict[str, Any]] | None = None
 
     def serialize_for_results(self) -> dict[str, Any]:
+        """Serialize the document for results display."""
         result_dict = {
             "type": "searchIndex",
             "id": self.id,
@@ -106,12 +110,14 @@ class Document:
 
 @dataclass
 class WebResult:
-    id: Optional[str] = None
-    title: Optional[str] = None
-    url: Optional[str] = None
-    activity: Optional[ActivityDetail] = None
+    """Result from web remote knowledge source."""
+    id: str | None = None
+    title: str | None = None
+    url: str | None = None
+    activity: ActivityDetail | None = None
 
     def serialize_for_results(self) -> dict[str, Any]:
+        """Results from web remote knowledge source."""
         return {
             "type": "web",
             "id": self.id,
@@ -124,14 +130,16 @@ class WebResult:
 
 @dataclass
 class SharePointResult:
-    id: Optional[str] = None
-    web_url: Optional[str] = None
-    content: Optional[str] = None
-    title: Optional[str] = None
-    reranker_score: Optional[float] = None
-    activity: Optional[ActivityDetail] = None
+    """Result from SharePoint remote knowledge source."""
+    id: str | None = None
+    web_url: str | None = None
+    content: str | None = None
+    title: str | None = None
+    reranker_score: float | None = None
+    activity: ActivityDetail | None = None
 
     def serialize_for_results(self) -> dict[str, Any]:
+        """Results from SharePoint remote knowledge source."""
         return {
             "type": "remoteSharePoint",
             "id": self.id,
@@ -146,6 +154,7 @@ class SharePointResult:
 
 @dataclass
 class RewriteQueryResult:
+    """Result from rewriting a query."""
     query: str
     messages: list[ChatCompletionMessageParam]
     completion: ChatCompletion
@@ -154,11 +163,13 @@ class RewriteQueryResult:
 
 @dataclass
 class ThoughtStep:
+    """A single thought step in an agentic approach."""
     title: str
-    description: Optional[Any]
-    props: Optional[dict[str, Any]] = None
+    description: Any | None
+    props: dict[str, Any] | None = None
 
     def update_token_usage(self, usage: CompletionUsage) -> None:
+        """Update the token usage in the thought step's props."""
         if self.props:
             self.props["token_usage"] = TokenUsageProps.from_completion_usage(usage)
 
@@ -171,38 +182,42 @@ class AgenticRetrievalResults:
     documents: list[Document]
     web_results: list[WebResult]
     sharepoint_results: list[SharePointResult] = field(default_factory=list)
-    answer: Optional[str] = None  # Synthesized answer when web knowledge source is used
-    rewrite_result: Optional[RewriteQueryResult] = None
-    activity_details_by_id: Optional[dict[int, ActivityDetail]] = None
+    answer: str | None = None  # Synthesized answer when web knowledge source is used
+    rewrite_result: RewriteQueryResult | None = None
+    activity_details_by_id: dict[int, ActivityDetail] | None = None
     thoughts: list[ThoughtStep] = field(default_factory=list)
 
 
 @dataclass
 class DataPoints:
-    text: Optional[list[str]] = None
-    images: Optional[list] = None
-    citations: Optional[list[str]] = None
-    external_results_metadata: Optional[list[dict[str, Any]]] = None
-    citation_activity_details: Optional[dict[str, dict[str, Any]]] = None
+    """Data points including text, images, citations, external results metadata, and citation activity details."""
+    text: list[str] | None = None
+    images: list | None = None
+    citations: list[str] | None = None
+    external_results_metadata: list[dict[str, Any]] | None = None
+    citation_activity_details: dict[str, dict[str, Any]] | None = None
 
 
 @dataclass
 class ExtraInfo:
+    """Extra information including data points, thoughts, follow-up questions, and answer."""
     data_points: DataPoints
     thoughts: list[ThoughtStep] = field(default_factory=list)
-    followup_questions: Optional[list[Any]] = None
-    answer: Optional[str] = None  # Only when web knowledge source is used
+    followup_questions: list[Any] | None = None
+    answer: str | None = None  # Only when web knowledge source is used
 
 
 @dataclass
 class TokenUsageProps:
+    """Token usage properties including prompt, completion, reasoning, and total tokens."""
     prompt_tokens: int
     completion_tokens: int
-    reasoning_tokens: Optional[int]
+    reasoning_tokens: int | None
     total_tokens: int
 
     @classmethod
     def from_completion_usage(cls, usage: CompletionUsage) -> "TokenUsageProps":
+        """Create TokenUsageProps from CompletionUsage."""
         return cls(
             prompt_tokens=usage.prompt_tokens,
             completion_tokens=usage.completion_tokens,
@@ -217,11 +232,13 @@ class TokenUsageProps:
 # https://learn.microsoft.com/azure/ai-services/openai/how-to/reasoning
 @dataclass
 class GPTReasoningModelSupport:
+    """Support details for GPT reasoning models including streaming and minimal effort capabilities."""
     streaming: bool
     minimal_effort: bool
 
 
 class Approach(ABC):
+    """Base class for different approaches to handle search and OpenAI interactions."""
     # List of GPT reasoning models support
     GPT_REASONING_MODELS = {
         "o1": GPTReasoningModelSupport(streaming=False, minimal_effort=False),
@@ -241,24 +258,25 @@ class Approach(ABC):
         self,
         search_client: SearchClient,
         openai_client: AsyncOpenAI,
-        knowledgebase_model: Optional[str],
-        knowledgebase_deployment: Optional[str],
-        query_language: Optional[str],
-        query_speller: Optional[str],
-        embedding_deployment: Optional[str],  # Not needed for non-Azure OpenAI or for retrieval_mode="text"
+        knowledgebase_model: str |None,
+        knowledgebase_deployment: str |None,
+        query_language: str |None,
+        query_speller: str |None,
+        embedding_deployment: str |None,  # Not needed for non-Azure OpenAI or for retrieval_mode="text"
         embedding_model: str,
         embedding_dimensions: int,
         embedding_field: str,
         openai_host: str,
         chatgpt_model: str,
-        chatgpt_deployment: Optional[str],  # Not needed for non-Azure OpenAI
+        chatgpt_deployment: str |None,  # Not needed for non-Azure OpenAI
         prompt_manager: PromptManager,
-        reasoning_effort: Optional[str] = None,
+        reasoning_effort: str | None = None,
         multimodal_enabled: bool = False,
-        image_embeddings_client: Optional[ImageEmbeddings] = None,
-        global_blob_manager: Optional[BlobManager] = None,
-        user_blob_manager: Optional[AdlsBlobManager] = None,
+        image_embeddings_client: ImageEmbeddings | None = None,
+        global_blob_manager: BlobManager | None = None,
+        user_blob_manager: AdlsBlobManager | None = None,
     ):
+        """Initialize the approach with necessary clients and configurations."""
         self.search_client = search_client
         self.openai_client = openai_client
         self.query_language = query_language
@@ -282,7 +300,8 @@ class Approach(ABC):
         self.global_blob_manager = global_blob_manager
         self.user_blob_manager = user_blob_manager
 
-    def build_filter(self, overrides: dict[str, Any]) -> Optional[str]:
+    def build_filter(self, overrides: dict[str, Any]) -> str |None:
+        """Build a filter string based on include and exclude category overrides."""
         include_category = overrides.get("include_category")
         exclude_category = overrides.get("exclude_category")
         filters = []
@@ -295,18 +314,19 @@ class Approach(ABC):
     async def search(
         self,
         top: int,
-        query_text: Optional[str],
-        filter: Optional[str],
+        query_text: str |None,
+        filter: str |None,
         vectors: list[VectorQuery],
         use_text_search: bool,
         use_vector_search: bool,
         use_semantic_ranker: bool,
         use_semantic_captions: bool,
-        minimum_search_score: Optional[float] = None,
-        minimum_reranker_score: Optional[float] = None,
-        use_query_rewriting: Optional[bool] = None,
-        access_token: Optional[str] = None,
+        minimum_search_score: float | None = None,
+        minimum_reranker_score: float | None = None,
+        use_query_rewriting: bool | None = None,
+        access_token: str | None = None,
     ) -> list[Document]:
+        """Perform a search with various options including text, vector, and semantic search."""
         search_text = query_text if use_text_search else ""
         search_vectors = vectors if use_vector_search else []
         if use_semantic_ranker:
@@ -367,8 +387,9 @@ class Approach(ABC):
         self,
         chat_completion: ChatCompletion,
         user_query: str,
-        no_response_token: Optional[str] = None,
+        no_response_token: str | None = None,
     ) -> str:
+        """Extract the rewritten query from a chat completion response."""
         response_message = chat_completion.choices[0].message
 
         if response_message.tool_calls:
@@ -398,13 +419,14 @@ class Approach(ABC):
         prompt_variables: dict[str, Any],
         overrides: dict[str, Any],
         chatgpt_model: str,
-        chatgpt_deployment: Optional[str],
+        chatgpt_deployment: str |None,
         user_query: str,
         response_token_limit: int,
-        tools: Optional[list[ChatCompletionToolParam]] = None,
+        tools: list[ChatCompletionToolParam] | None = None,
         temperature: float = 0.0,
-        no_response_token: Optional[str] = None,
+        no_response_token: str | None = None,
     ) -> RewriteQueryResult:
+        """Rewrite the user query using a chat completion model."""
         query_messages = self.prompt_manager.render_prompt(prompt_template, prompt_variables)
         rewrite_reasoning_effort = self.get_lowest_reasoning_effort(self.chatgpt_model)
 
@@ -440,14 +462,15 @@ class Approach(ABC):
         messages: list[ChatCompletionMessageParam],
         knowledgebase_client: KnowledgeBaseRetrievalClient,
         search_index_name: str,
-        filter_add_on: Optional[str] = None,
-        minimum_reranker_score: Optional[float] = None,
-        access_token: Optional[str] = None,
+        filter_add_on: str | None = None,
+        minimum_reranker_score: float | None = None,
+        access_token: str | None = None,
         use_web_source: bool = False,
         use_sharepoint_source: bool = False,
-        retrieval_reasoning_effort: Optional[str] = None,
+        retrieval_reasoning_effort: str | None = None,
         should_rewrite_query: bool = True,
     ) -> AgenticRetrievalResults:
+        """Perform agentic retrieval using the knowledgebase client."""
         # STEP 1: Invoke agentic retrieval
         thoughts = []
 
@@ -537,11 +560,7 @@ class Approach(ABC):
         if not use_web_source:
             agentic_retrieval_input["output_mode"] = "extractiveData"
 
-        retrieval_effort: Optional[
-            KnowledgeRetrievalMinimalReasoningEffort
-            | KnowledgeRetrievalLowReasoningEffort
-            | KnowledgeRetrievalMediumReasoningEffort
-        ] = None
+        retrieval_effort: KnowledgeRetrievalMinimalReasoningEffort | KnowledgeRetrievalLowReasoningEffort | KnowledgeRetrievalMediumReasoningEffort | None = None
         if retrieval_reasoning_effort == "minimal":
             retrieval_effort = KnowledgeRetrievalMinimalReasoningEffort()
         elif retrieval_reasoning_effort == "low":
@@ -648,7 +667,7 @@ class Approach(ABC):
             sharepoint_results.append(sharepoint_result)
 
         # Extract answer from response if web knowledge source provided one
-        answer: Optional[str] = None
+        answer: str | None = None
         if (
             use_web_source
             and response.response
@@ -657,7 +676,7 @@ class Approach(ABC):
         ):
             message_content = response.response[0].content[0]
             if isinstance(message_content, KnowledgeBaseMessageTextContent):
-                raw_answer: Optional[str] = message_content.text
+                raw_answer: str | None = message_content.text
                 # Replace all ref_id tokens (web -> URL, documents -> sourcepage, SharePoint -> web_url)
                 if raw_answer:
                     answer = self.replace_all_ref_ids(raw_answer, document_results, web_results, sharepoint_results)
@@ -694,7 +713,7 @@ class Approach(ABC):
         answer: str,
         documents: list[Document],
         web_results: list[WebResult],
-        sharepoint_results: Optional[list[SharePointResult]] = None,
+        sharepoint_results: list[SharePointResult] | None = None,
     ) -> str:
         """Replace [ref_id:<id>] tokens with document sourcepage, web URL, or SharePoint web_url.
 
@@ -724,9 +743,9 @@ class Approach(ABC):
         use_semantic_captions: bool,
         include_text_sources: bool,
         download_image_sources: bool,
-        user_oid: Optional[str] = None,
-        web_results: Optional[list[WebResult]] = None,
-        sharepoint_results: Optional[list[SharePointResult]] = None,
+        user_oid: str | None = None,
+        web_results: list[WebResult] | None = None,
+        sharepoint_results: list[SharePointResult] | None = None,
     ) -> DataPoints:
         """Extract text/image sources & citations from documents.
 
@@ -828,26 +847,26 @@ class Approach(ABC):
             citation_activity_details=citation_activity_details if citation_activity_details else None,
         )
 
-    def get_citation(self, sourcepage: Optional[str]):
+    def get_citation(self, sourcepage: str |None):
+        """Generate a citation string based on the source page."""
         return sourcepage or ""
 
-    def get_image_citation(self, sourcepage: Optional[str], image_url: str):
+    def get_image_citation(self, sourcepage: str |None, image_url: str):
+        """Generate a citation string for an image based on the source page and image URL."""
         sourcepage_citation = self.get_citation(sourcepage)
         image_filename = image_url.split("/")[-1]
         return f"{sourcepage_citation}({image_filename})"
 
-    async def download_blob_as_base64(self, blob_url: str, user_oid: Optional[str] = None) -> Optional[str]:
-        """
-        Downloads a blob from either Azure Blob Storage or Azure Data Lake Storage and returns it as a base64 encoded string.
+    async def download_blob_as_base64(self, blob_url: str, user_oid: str | None = None) -> str |None:
+        """Download a blob from either Azure Blob Storage or Azure Data Lake Storage and returns it as a base64 encoded string.
 
         Args:
             blob_url: The URL or path to the blob to download
             user_oid: The user's object ID, required for Data Lake Storage operations and access control
 
         Returns:
-            Optional[str]: The base64 encoded image data with data URI scheme prefix, or None if the blob cannot be downloaded
+            str |: The base64 encoded image data with data URI scheme prefix, or None if the blob cannot be downloaded
         """
-
         # Handle full URLs for both Blob Storage and Data Lake Storage
         if blob_url.startswith("http"):
             url_parts = blob_url.split("/")
@@ -875,6 +894,7 @@ class Approach(ABC):
         return None
 
     async def compute_text_embedding(self, q: str):
+        """Compute the text embedding for a given query string."""
         SUPPORTED_DIMENSIONS_MODEL = {
             "text-embedding-ada-002": False,
             "text-embedding-3-small": True,
@@ -899,12 +919,14 @@ class Approach(ABC):
         return VectorizedQuery(vector=query_vector, k=50, fields=self.embedding_field)
 
     async def compute_multimodal_embedding(self, q: str):
+        """Compute the multimodal embedding for a given query string."""
         if not self.image_embeddings_client:
             raise ValueError("Approach is missing an image embeddings client for multimodal queries")
         multimodal_query_vector = await self.image_embeddings_client.create_embedding_for_text(q)
         return VectorizedQuery(vector=multimodal_query_vector, k=50, fields="images/embedding")
 
-    def get_system_prompt_variables(self, override_prompt: Optional[str]) -> dict[str, str]:
+    def get_system_prompt_variables(self, override_prompt: str |None) -> dict[str, str]:
+        """Get variables for system prompt based on override prompt."""
         # Allows client to replace the entire prompt, or to inject into the existing prompt using >>>
         if override_prompt is None:
             return {}
@@ -914,15 +936,14 @@ class Approach(ABC):
             return {"override_prompt": override_prompt}
 
     def get_response_token_limit(self, model: str, default_limit: int) -> int:
+        """Get the response token limit based on the model."""
         if model in self.GPT_REASONING_MODELS:
             return self.RESPONSE_REASONING_DEFAULT_TOKEN_LIMIT
 
         return default_limit
 
     def get_lowest_reasoning_effort(self, model: str) -> ChatCompletionReasoningEffort:
-        """
-        Return the lowest valid reasoning_effort for the given model.
-        """
+        """Return the lowest valid reasoning_effort for the given model."""
         if model not in self.GPT_REASONING_MODELS:
             return None
         if self.GPT_REASONING_MODELS[model].minimal_effort:
@@ -931,17 +952,18 @@ class Approach(ABC):
 
     def create_chat_completion(
         self,
-        chatgpt_deployment: Optional[str],
+        chatgpt_deployment: str |None,
         chatgpt_model: str,
         messages: list[ChatCompletionMessageParam],
         overrides: dict[str, Any],
         response_token_limit: int,
         should_stream: bool = False,
-        tools: Optional[list[ChatCompletionToolParam]] = None,
-        temperature: Optional[float] = None,
-        n: Optional[int] = None,
-        reasoning_effort: Optional[ChatCompletionReasoningEffort] = None,
+        tools: list[ChatCompletionToolParam] | None = None,
+        temperature: float | None = None,
+        n: int | None = None,
+        reasoning_effort: ChatCompletionReasoningEffort | None = None,
     ) -> Awaitable[ChatCompletion] | Awaitable[AsyncStream[ChatCompletionChunk]]:
+        """Create a chat completion with appropriate parameters based on model capabilities."""
         if chatgpt_model in self.GPT_REASONING_MODELS:
             params: dict[str, Any] = {
                 # max_tokens is not supported
@@ -982,10 +1004,11 @@ class Approach(ABC):
         messages: list[ChatCompletionMessageParam],
         overrides: dict[str, Any],
         model: str,
-        deployment: Optional[str],
-        usage: Optional[CompletionUsage] = None,
-        reasoning_effort: Optional[ChatCompletionReasoningEffort] = None,
+        deployment: str |None,
+        usage: CompletionUsage | None = None,
+        reasoning_effort: ChatCompletionReasoningEffort | None = None,
     ) -> ThoughtStep:
+        """Format a ThoughtStep for a chat completion response."""
         properties: dict[str, Any] = {"model": model}
         if deployment:
             properties["deployment"] = deployment
@@ -1004,6 +1027,7 @@ class Approach(ABC):
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> dict[str, Any]:
+        """Run the approach with the given messages and context."""
         raise NotImplementedError
 
     async def run_stream(
@@ -1012,4 +1036,5 @@ class Approach(ABC):
         session_state: Any = None,
         context: dict[str, Any] = {},
     ) -> AsyncGenerator[dict[str, Any], None]:
+        """Run the approach in streaming mode with the given messages and context."""
         raise NotImplementedError
