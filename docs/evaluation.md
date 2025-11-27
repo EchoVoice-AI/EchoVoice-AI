@@ -88,7 +88,7 @@ The options are:
 
 - `numquestions`: The number of questions to evaluate. By default, this is all questions in the ground truth data.
 - `resultsdir`: The directory to write the evaluation results. By default, this is a timestamped folder in `evals/results`. This option can also be specified in `evaluate_config.json`.
-- `targeturl`: The URL of the running application to evaluate. By default, this is `http://localhost:50505`. This option can also be specified in `evaluate_config.json`.
+- `targeturl`: The URL of the running application to evaluate. By default, this is `http://localhost:8000`. This option can also be specified in `evaluate_config.json`.
 
 🕰️ This may take a long time, possibly several hours, depending on the number of ground truth questions, the TPM capacity of the evaluation model, and the number of LLM-based metrics requested.
 

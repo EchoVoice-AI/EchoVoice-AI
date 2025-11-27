@@ -160,10 +160,10 @@ def client_app(server_app_id: str, server_app: Application, identifier: int) -> 
         display_name=f"Azure Search OpenAI Chat Client App {identifier}",
         sign_in_audience="AzureADMyOrg",
         web=WebApplication(
-            redirect_uris=["http://localhost:50505/.auth/login/aad/callback"],
+            redirect_uris=["http://localhost:8000/.auth/login/aad/callback"],
             implicit_grant_settings=ImplicitGrantSettings(enable_id_token_issuance=True),
         ),
-        spa=SpaApplication(redirect_uris=["http://localhost:50505/redirect", "http://localhost:5173/redirect"]),
+        spa=SpaApplication(redirect_uris=["http://localhost:8000/redirect", "http://localhost:5173/redirect"]),
         required_resource_access=[
             RequiredResourceAccess(
                 resource_app_id=server_app_id,

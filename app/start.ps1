@@ -68,7 +68,7 @@ Write-Host "Starting backend"
 Write-Host ""
 Set-Location ../backend
 
-$port = 50505
+$port = 8000
 $hostname = "localhost"
 Start-Process -FilePath $venvPythonPath -ArgumentList "-m uvicorn main:app --port $port --host $hostname --reload" -Wait -NoNewWindow
 
