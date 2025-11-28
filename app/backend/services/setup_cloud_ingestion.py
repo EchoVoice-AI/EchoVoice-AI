@@ -9,7 +9,7 @@ from azure.identity.aio import AzureDeveloperCliCredential
 from openai import AsyncOpenAI
 from rich.logging import RichHandler
 
-from load_azd_env import load_azd_env
+from services.load_azd_env import load_azd_env
 from prepdocslib.blobmanager import BlobManager
 from prepdocslib.cloudingestionstrategy import CloudIngestionStrategy
 from prepdocslib.listfilestrategy import LocalListFileStrategy

@@ -22,6 +22,8 @@ export type SegmentUpdate = {
 export type ISegmentorCard = {
   id: string;
   name: string;
+  type: string;
+  description: string;
   avatarUrl: string;
   priority: number;
   role?: string;

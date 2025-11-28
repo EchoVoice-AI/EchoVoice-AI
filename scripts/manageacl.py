@@ -19,7 +19,7 @@ from azure.search.documents.indexes.models import (
     SearchIndexPermissionFilterOption,
 )
 
-from load_azd_env import load_azd_env
+from services.load_azd_env import load_azd_env
 
 logger = logging.getLogger("scripts")
 

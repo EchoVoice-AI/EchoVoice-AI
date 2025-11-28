@@ -187,7 +187,7 @@ The cloud ingestion pipeline uses four Azure Functions as custom skills within a
    - **Text Processor** (Skill #4): Combines text with enriched figures, chunks content, and generates embeddings
 4. **Azure AI Search Index** receives the final processed chunks with embeddings
 
-The functions are defined in the `app/functions/` directory, and the custom skillset is configured in the `app/backend/setup_cloud_ingestion.py` script.
+The functions are defined in the `app/functions/` directory, and the custom skillset is configured in the `app/backend/services/setup_cloud_ingestion.py` script.
 
 #### [Document Extractor Function](app/functions/document_extractor/)
 

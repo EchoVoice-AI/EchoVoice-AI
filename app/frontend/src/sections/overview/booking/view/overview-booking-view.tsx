@@ -1,43 +1,49 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState } from 'react';
 
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid2';
 
 import { DashboardContent } from 'src/layouts/dashboard';
-import { useCustomerStore } from 'src/store/customerStore';
-import { _bookings, _bookingNew, _bookingReview, _bookingsOverview } from 'src/_mock';
+import { _segmentors, _segmentorReview, _segmentorsOverview } from 'src/_mock';
 import {
   BookingIllustration,
   CheckInIllustration,
   CheckoutIllustration,
 } from 'src/assets/illustrations';
 
+import { SegmentorCardList } from 'src/sections/segment/segmentor-card-list';
+
 import { BookingBooked } from '../booking-booked';
-import { BookingNewest } from '../booking-newest';
-import { BookingDetails } from '../booking-details';
-import { BookingAvailable } from '../booking-available';
-import { BookingStatistics } from '../booking-statistics';
 import { BookingTotalIncomes } from '../booking-total-incomes';
 import { BookingWidgetSummary } from '../booking-widget-summary';
 import { BookingCheckInWidgets } from '../booking-check-in-widgets';
 import { BookingCustomerReviews } from '../booking-customer-reviews';
 
+
 // ----------------------------------------------------------------------
 
 export function OverviewBookingView() {
-  const customers = useCustomerStore((state) => state.customers);
-  const fetchCustomers = useCustomerStore((state) => state.fetchCustomers);
+  // Use mock segments data and keep local state so updates persist in-memory
+  const [segments, setSegments] = useState(() => _segmentors.slice());
 
-  useEffect(() => {
-    fetchCustomers();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const handleUpdateSegment = (updated: any) => {
+    setSegments((prev) => prev.map((s) => (s.id === updated.id ? { ...s, ...updated } : s)));
+  };
 
-  const totalActive = customers.length;
-  const totalPPPoE = customers.filter((c) => c.service_type === 'ppoe').length;
-  const totalHotspot = customers.filter((c) => c.service_type === 'hotspot').length;
+  const totalActive = segments.length;
+
+  // Try to derive rule-based vs experiment counts from common keys.
+  const totalRuleBased = segments.filter((s: any) => {
+    const val = ((s.type ) || '').toString().toLowerCase();
+    return val.includes('rule') || val.includes('rule-based');
+  }).length;
+
+  const totalExperiment = segments.filter((s: any) => {
+    const val = ((s.type ) || '').toString().toLowerCase();
+    return val.includes('experiment') || val.includes('hotspot');
+  }).length;
 
   return (
     <DashboardContent maxWidth="xl">
@@ -55,7 +61,7 @@ export function OverviewBookingView() {
           <BookingWidgetSummary
             title="Rule-based Segments"
             percent={0}
-            total={totalPPPoE}
+            total={totalRuleBased}
             icon={<CheckInIllustration />}
           />
         </Grid>
@@ -64,7 +70,7 @@ export function OverviewBookingView() {
           <BookingWidgetSummary
             title="Experiment Segments"
             percent={0}
-            total={totalHotspot}
+            total={totalExperiment}
             icon={<CheckoutIllustration />}
           />
         </Grid>
@@ -104,7 +110,7 @@ export function OverviewBookingView() {
 
                 <BookingBooked
                   title="Segment Status"
-                  data={_bookingsOverview}
+                  data={_segmentorsOverview}
                   sx={{ boxShadow: { md: 'none' } }}
                 />
               </Box>
@@ -112,91 +118,39 @@ export function OverviewBookingView() {
               <BookingCheckInWidgets
                 chart={{
                   series: [
-                    { label: 'Rule-based Segments', percent: 73.9, total: 38566 },
-                    { label: 'Experiment Segments', percent: 45.6, total: 18472 },
+                    {
+                      label: 'Rule-based Segments',
+                      percent: totalActive ? Number(((totalRuleBased / totalActive) * 100).toFixed(1)) : 0,
+                      total: totalRuleBased,
+                    },
+                    {
+                      label: 'Experiment Segments',
+                      percent: totalActive ? Number(((totalExperiment / totalActive) * 100).toFixed(1)) : 0,
+                      total: totalExperiment,
+                    },
                   ],
                 }}
                 sx={{ boxShadow: { md: 'none' } }}
               />
             </Box>
-
-            <BookingStatistics
-              title="Statistics"
-              chart={{
-                series: [
-                  {
-                    name: 'Weekly',
-                    categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
-                    data: [
-                      { name: 'PPoE', data: [24, 41, 35, 151, 49] },
-                      { name: 'Hotspot', data: [20, 56, 77, 88, 99] },
-                    ],
-                  },
-                  {
-                    name: 'Monthly',
-                    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-                    data: [
-                      { name: 'PPoE', data: [83, 112, 119, 88, 103, 112, 114, 108, 93] },
-                      { name: 'Hotspot', data: [46, 46, 43, 58, 40, 59, 54, 42, 51] },
-                    ],
-                  },
-                  {
-                    name: 'Yearly',
-                    categories: ['2018', '2019', '2020', '2021', '2022', '2023'],
-                    data: [
-                      { name: 'PPoE', data: [76, 42, 29, 41, 27, 96] },
-                      { name: 'Hotspot', data: [46, 44, 24, 43, 44, 43] },
-                    ],
-                  },
-                ],
-              }}
-            />
           </Grid>
 
           <Grid size={{ xs: 12, md: 5, lg: 4 }}>
             <Box sx={{ gap: 3, display: 'flex', flexDirection: 'column' }}>
-                {/* <BookingAvailable
-                  title="Segment Configs"
-                  chart={{
-                    series: [
-                      { label: 'Active', value: 120 },
-                      { label: 'Inactive', value: 66 },
-                    ],
-                  }}
-                /> */}
-
               <BookingCustomerReviews
                 title="Audit entries"
-                subheader={`${_bookingReview.length} entries`}
-                list={_bookingReview}
+                subheader={`${_segmentorReview.length} entries`}
+                list={_segmentorReview}
               />
             </Box>
           </Grid>
         </Grid>
 
         <Grid size={12}>
-          <BookingNewest
-            title="Newest segments"
-            subheader={`${_bookingNew.length} segments`}
-            list={_bookingNew}
-          />
-        </Grid>
-
-        <Grid size={12}>
-          <BookingDetails
-            title="Segment details"
-            tableData={_bookings}
-            headCells={[
-              { id: 'segmentId', label: 'Segment ID' },
-              { id: 'name', label: 'Name' },
-              { id: 'rule', label: 'Rule' },
-              { id: 'created', label: 'Created' },
-              { id: 'status', label: 'Status' },
-              { id: '' },
-            ]}
-          />
+          <SegmentorCardList segments={segments} onUpdate={handleUpdateSegment} />
         </Grid>
       </Grid>
+      
     </DashboardContent>
   );
 }

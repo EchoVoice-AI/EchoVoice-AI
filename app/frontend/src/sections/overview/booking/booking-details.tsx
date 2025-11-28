@@ -36,7 +36,8 @@ type Props = CardProps & {
   headCells: TableHeadCellProps[];
   tableData: {
     id: string;
-    status: string;
+    type:string;
+    status: boolean;
     checkIn: IDateValue;
     checkOut: IDateValue;
     destination: {
@@ -215,13 +216,9 @@ function RowItem({ row }: RowItemProps) {
         <TableCell>
           <Label
             variant={lightMode ? 'soft' : 'filled'}
-            color={
-              (row.status === 'Paid' && 'success') ||
-              (row.status === 'Pending' && 'warning') ||
-              'error'
-            }
+            color={row.status ?'success' : 'error'}
           >
-            {row.status}
+            {row.status ? 'Active' : 'Inactive'}
           </Label>
         </TableCell>
 

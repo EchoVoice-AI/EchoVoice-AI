@@ -8,10 +8,12 @@ import Typography from '@mui/material/Typography';
 
 import { CONFIG } from 'src/global-config';
 import { DashboardContent } from 'src/layouts/dashboard';
-import { _coursesContinue, _coursesFeatured, _coursesReminder } from 'src/_mock';
+// NOTE: These mock imports need to be replaced with RAG-specific mock data (e.g., _ragCitationsFeatured, _ragIndexWarnings)
+import { _coursesContinue, _coursesFeatured, _coursesReminder } from 'src/_mock'; 
 
 import { useAuthContext } from 'src/auth/hooks/use-auth-context';
 
+// Keep the original component imports but change the context of what they display
 import { CourseProgress } from '../course-progress';
 import { CourseContinue } from '../course-continue';
 import { CourseFeatured } from '../course-featured';
@@ -23,7 +25,7 @@ import { CourseWidgetSummary } from '../course-widget-summary';
 
 // ----------------------------------------------------------------------
 
-export function OverviewCourseView() {
+export function OverviewRetrieverView() { // Renamed View component for context
   const { user } = useAuthContext();
   return (
     <DashboardContent
@@ -58,7 +60,7 @@ export function OverviewCourseView() {
             </Typography>
             <Typography
               sx={{ color: 'text.secondary' }}
-            >Check out your vouchers!</Typography>
+            >Review the health and performance of your **Content Retriever Index**!</Typography> {/* Changed secondary text */}
           </Box>
 
           <Box
@@ -68,45 +70,45 @@ export function OverviewCourseView() {
               gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(3, 1fr)' },
             }}
           >
-            <CourseWidgetSummary
-              title="Total Vouchers"
-              total={6}
-              icon={`${CONFIG.assetsDir}/assets/icons/courses/ic-courses-progress.svg`}
+            <CourseWidgetSummary // Widget 1: Total Content Indexed
+              title="Total Indexed Documents"
+              total={6540} // Total number of documents indexed
+              icon={`${CONFIG.assetsDir}/assets/icons/rag/ic-documents.svg`}
             />
 
-            <CourseWidgetSummary
-              title="Active"
-              total={3}
+            <CourseWidgetSummary // Widget 2: Successful Retrieval Rate
+              title="Successful Retrieval Rate (%)"
+              total={93.5}
               color="success"
-              icon={`${CONFIG.assetsDir}/assets/icons/courses/ic-courses-completed.svg`}
+              icon={`${CONFIG.assetsDir}/assets/icons/rag/ic-relevance.svg`}
             />
 
-            <CourseWidgetSummary
-              title="Expired"
-              total={2}
+            <CourseWidgetSummary // Widget 3: Index Stale Rate
+              title="Index Stale Rate (%)"
+              total={2.5}
               color="secondary"
-              icon={`${CONFIG.assetsDir}/assets/icons/courses/ic-courses-certificates.svg`}
+              icon={`${CONFIG.assetsDir}/assets/icons/rag/ic-stale.svg`}
             />
           </Box>
 
-          <CourseHoursSpent
-            title="Hours spent"
+          <CourseHoursSpent // Chart 1: Retrieval Latency
+            title="Avg. Content Retrieval Latency (ms)"
             chart={{
               series: [
                 {
                   name: 'Weekly',
                   categories: ['Week 1', 'Week 2', 'Week 3', 'Week 4', 'Week 5'],
-                  data: [{ data: [10, 41, 35, 151, 49] }],
+                  data: [{ data: [110, 85, 95, 120, 105] }], // Mock data in milliseconds
                 },
                 {
                   name: 'Monthly',
                   categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'],
-                  data: [{ data: [83, 112, 119, 88, 103, 112, 114, 108, 93] }],
+                  data: [{ data: [93, 112, 119, 88, 103, 112, 114, 108, 93] }],
                 },
                 {
                   name: 'Yearly',
-                  categories: ['2018', '2019', '2020', '2021', '2022', '2023'],
-                  data: [{ data: [24, 72, 64, 96, 76, 41] }],
+                  categories: ['2023', '2024'],
+                  data: [{ data: [80, 100] }],
                 },
               ],
             }}
@@ -120,21 +122,22 @@ export function OverviewCourseView() {
               gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' },
             }}
           >
-            <CourseProgress
-              title="Course progress"
+            <CourseProgress // Chart 2: Retrieval Success Breakdown
+              title="RAG Retrieval Status Breakdown"
               chart={{
                 series: [
-                  { label: 'To start', value: 45 },
-                  { label: 'In progress', value: 25 },
-                  { label: 'Completed', value: 20 },
+                  { label: 'Successful Citation', value: 75 },
+                  { label: 'Low Relevance Score', value: 15 },
+                  { label: 'Retrieval Failure', value: 10 },
                 ],
               }}
             />
 
-            <CourseContinue title="Continue course" list={_coursesContinue} />
+            <CourseContinue // List 1: Latest Indexed Content
+              title="Latest Indexed Content" 
+              list={_coursesContinue} // Assuming this list now holds recent indexed document titles
+            />
           </Box>
-
-          <CourseFeatured title="Featured course" list={_coursesFeatured} />
         </Box>
 
         <Box
@@ -156,17 +159,20 @@ export function OverviewCourseView() {
             },
           }}
         >
-          <CourseMyAccount />
+          <CourseMyAccount /> {/* Component (3) - Kept as placeholder for Index Metadata/Settings */}
 
-          <CourseMyStrength
-            title="Strength"
+          <CourseMyStrength // Chart 3: Relevance by Content Category
+            title="Query Relevance by Content Category"
             chart={{
-              categories: ['English', 'History', 'Physics', 'Geography', 'Chinese', 'Math'],
-              series: [{ data: [80, 50, 30, 40, 100, 20] }],
+              categories: ['Segments', 'Product Specs', 'Legal Rules', 'Pricing', 'T&Cs'],
+              series: [{ data: [85, 92, 78, 90, 65] }], // Relevance scores
             }}
           />
 
-          <CourseReminders title="Reminders" list={_coursesReminder} />
+          <CourseReminders // List 4: Index Health Warnings
+            title="Index Health Warnings" 
+            list={_coursesReminder} // Assuming this list now holds warnings (e.g., stale index, low coverage)
+          />
         </Box>
       </Box>
     </DashboardContent>

@@ -13,7 +13,7 @@ from azure.storage.filedatalake.aio import (
     DataLakeServiceClient,
 )
 
-from load_azd_env import load_azd_env
+from services.load_azd_env import load_azd_env
 
 logger = logging.getLogger("scripts")
 

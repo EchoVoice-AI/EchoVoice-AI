@@ -80,9 +80,7 @@ export const navData: NavSectionProps['data'] = [
         icon: ICONS.user,
         children: [
           { title: 'Retrievers Overview', path: paths.dashboard.retrievers.root },
-          { title: 'Retrievers All', path: paths.dashboard.retrievers.cards },
-          { title: 'Retrievers List', path: paths.dashboard.retrievers.list },
-          { title: 'Create Retriever', path: paths.dashboard.retrievers.new },
+          { title: 'Retrievers Settings', path: paths.dashboard.retrievers.new },
         ],
       },
     ],

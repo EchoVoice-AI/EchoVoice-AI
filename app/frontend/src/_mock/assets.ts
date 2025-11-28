@@ -330,30 +330,30 @@ export const _roles = [
 // ----------------------------------------------------------------------
 
 export const _postTitles = [
-  `The Future of Renewable Energy: Innovations and Challenges Ahead`,
-  `Exploring the Impact of Artificial Intelligence on Modern Healthcare`,
-  `Climate Change and Its Effects on Global Food Security`,
-  `The Rise of Remote Work: Benefits, Challenges, and Future Trends`,
-  `Understanding Blockchain Technology: Beyond Cryptocurrency`,
-  `Mental Health in the Digital Age: Navigating Social Media and Well-being`,
-  `Sustainable Fashion: How the Industry is Going Green`,
-  `Space Exploration: New Frontiers and the Quest for Extraterrestrial Life`,
-  `The Evolution of E-Commerce: Trends Shaping the Online Retail Landscape`,
-  `Cybersecurity in the 21st Century: Protecting Data in a Digital World`,
-  `The Role of Big Data in Transforming Business Strategies`,
-  `Genetic Engineering: Ethical Considerations and Future Prospects`,
-  `Urban Farming: A Solution to Food Deserts and Urban Sustainability`,
-  `The Psychology of Consumer Behavior: What Drives Our Purchasing Decisions?`,
-  `Renewable Energy vs. Fossil Fuels: Which is the Future?`,
-  `Artificial Intelligence in Education: Enhancing Learning Experiences`,
-  `The Impact of Climate Change on Global Migration Patterns`,
-  `5G Technology: Revolutionizing Connectivity and Communication`,
-  `The Gig Economy: Opportunities, Risks, and the Future of Work`,
-  `Smart Cities: Integrating Technology for Sustainable Urban Living`,
-  `The Influence of Pop Culture on Modern Society`,
-  `Innovations in Medicine: From Telehealth to Personalized Treatment`,
-  `The Environmental Cost of Fast Fashion: What Can Consumers Do?`,
-  `The Intersection of Art and Technology: Digital Art in the 21st Century`,
+  `The Future of Personalization: Multi-Agent Orchestration on Azure`, // [cite: 122, 129]
+  `Beyond Static Segments: Moving to Dynamic Customer Journeys`, // [cite: 136]
+  `Ensuring Brand Safety: How Compliance Agents Protect Your Voice`, // [cite: 137, 171]
+  `The Power of RAG: Transforming Product Data into Contextual Offers`, // [cite: 168, 211]
+  `Explainable AI: Understanding Why a Customer Segment Was Chosen`, // [cite: 214, 215]
+  `From Mass Messaging to 1:1 Communication at Scale`, // [cite: 143]
+  `Building Trust: Why Citations Matter in AI-Generated Content`, // [cite: 180, 202]
+  `LangGraph Deep Dive: The Brain Behind the Orchestration`, // [cite: 161, 162]
+  `Hyper-Personalization: Leveraging Real-Time Data and Behavior`, // [cite: 141]
+  `Optimizing Conversion: The Role of the Experimentation Agent`, // [cite: 173, 220]
+  `Goal-Driven Segmentation: Clustering for High-Protein Shoppers`, // [cite: 166, 186]
+  `Safety First: Proactive Policy Enforcement in GenAI Marketing`, // [cite: 178, 196]
+  `Technical Architecture: Next.js, FastAPI, and Vector Search`, // [cite: 206-209]
+  `Breaking Down the Five-Phase Orchestration Strategy`, // [cite: 164]
+  `Voice of the Customer: Integrating Speech Services for Support`, // [cite: 100, 101]
+  `The End of Generic Spam: Delivering Value with Intelligent Agents`, // [cite: 143]
+  `Measuring Uplift: How Simulation Agents Predict ROI`, // [cite: 193, 220]
+  `Responsible AI: Navigating PII and Data Privacy in Marketing`, // [cite: 97, 98]
+  `Next-Gen Marketing: When Specialized Agents Collaborate`, // [cite: 132]
+  `Smart Retrieval: Using Embeddings and Vector Stores for Catalogs`, // [cite: 156, 188]
+  `The EchoVoice Advantage: Transparency, Control, and Speed`, // [cite: 126]
+  `Innovations in MarTech: The Shift to Agentic Workflows`, // [cite: 124]
+  `The Cost of Non-Compliance: Why Your AI Needs Guardrails`, // [cite: 94, 201]
+  `The Intersection of Creativity and Logic: Generative AI with Rules`, // [cite: 153, 197]
 ];
 
 // ----------------------------------------------------------------------
@@ -559,6 +559,43 @@ export const _courseNames = [
   `Photography Masterclass`,
 ];
 
+
+export const _indexedContent = [
+  // --- Core Product Content (RAG Source) ---
+  `Q3 2024 Product Catalog & Specs`,
+  `Brand Voice and Tone Guidelines V2.1`,
+  `Customer Loyalty Program T&Cs 2025`,
+  `Discounts and Promotions Policy Manual`,
+  `Product Recall and Safety Notices (2024)`,
+  `High-Protein Product Ingredient Manual`,
+  `Return and Exchange Policy FAQ`,
+  `Shipping and Delivery Service Level Agreements (SLA)`,
+
+  // --- Compliance & Legal Content ---
+  `Marketing Compliance Audit Report Q1`,
+  `Data Privacy and GDPR Handling Procedures`,
+  `Regulatory Claim Restrictions (Medical/Health)`,
+  `Approved Legal Disclaimers Library`,
+
+  // --- Customer & Support Content ---
+  `Top 50 Customer Support FAQs (Chatbot Source)`,
+  `Advanced Troubleshooting Guide for App`,
+  `Customer Sentiment Analysis Report H2 2024`,
+  `Subscription Management Workflow Manual`,
+
+  // --- Operational/Segmentation Data ---
+  `Segmentation Cluster Definitions V3.0`,
+  `RFM Model Score Documentation`,
+  `Inventory Status and Backorder Policy`,
+  `New Store Location Opening Protocols`,
+  
+  // --- Featured/High-Priority Documents ---
+  `CEO Letter on Responsible AI Usage`,
+  `Mandatory PII Masking Procedures`,
+  `Executive Summary: Q4 Uplift Targets`,
+  `Voice of Customer (VOC) Survey Analysis 2024`,
+];
+
 // ----------------------------------------------------------------------
 
 export const _fileNames = [
@@ -647,30 +684,39 @@ export const _sentences = [
 // ----------------------------------------------------------------------
 
 export const _descriptions = [
-  `Occaecati est et illo quibusdam accusamus qui. Incidunt aut et molestiae ut facere aut. Est quidem iusto praesentium excepturi harum nihil tenetur facilis. Ut omnis voluptates nihil accusantium doloribus eaque debitis.`,
-  `Atque eaque ducimus minima distinctio velit. Laborum et veniam officiis. Delectus ex saepe hic id laboriosam officia. Odit nostrum qui illum saepe debitis ullam. Laudantium beatae modi fugit ut. Dolores consequatur beatae nihil voluptates rem maiores.`,
-  `Rerum eius velit dolores. Explicabo ad nemo quibusdam. Voluptatem eum suscipit et ipsum et consequatur aperiam quia. Rerum nulla sequi recusandae illum velit quia quas. Et error laborum maiores cupiditate occaecati.`,
-  `Et non omnis qui. Qui sunt deserunt dolorem aut velit cumque adipisci aut enim. Nihil quis quisquam nesciunt dicta nobis ab aperiam dolorem repellat. Voluptates non blanditiis. Error et tenetur iste soluta cupiditate ratione perspiciatis et. Quibusdam aliquid nam sunt et quisquam non esse.`,
-  `Nihil ea sunt facilis praesentium atque. Ab animi alias sequi molestias aut velit ea. Sed possimus eos. Et est aliquid est voluptatem.`,
-  `Non rerum modi. Accusamus voluptatem odit nihil in. Quidem et iusto numquam veniam culpa aperiam odio aut enim. Quae vel dolores. Pariatur est culpa veritatis aut dolorem.`,
-  `Est enim et sit non impedit aperiam cumque animi. Aut eius impedit saepe blanditiis. Totam molestias magnam minima fugiat.`,
-  `Unde a inventore et. Sed esse ut. Atque ducimus quibusdam fuga quas id qui fuga.`,
-  `Eaque natus adipisci soluta nostrum dolorem. Nesciunt ipsum molestias ut aliquid natus ut omnis qui fugiat. Dolor et rem. Ut neque voluptatem blanditiis quasi ullam deleniti.`,
-  `Nam et error exercitationem qui voluptate optio. Officia omnis qui accusantium ipsam qui. Quia sequi nulla perspiciatis optio vero omnis maxime omnis ipsum. Perspiciatis consequuntur asperiores veniam dolores.`,
-  `Perspiciatis nulla ut ut ut voluptates totam consectetur eligendi qui. Optio ut cum. Dolorum sapiente qui laborum. Impedit temporibus totam delectus nihil. Voluptatem corrupti rem.`,
-  `Distinctio omnis similique omnis eos. Repellat cumque rerum nisi. Reiciendis soluta non ut veniam temporibus. Accusantium et dolorem voluptas harum. Nemo eius voluptate dicta et hic nemo. Dolorem assumenda et beatae molestias sit quo mollitia quis consequatur.`,
-  `Sed ut mollitia tempore ipsam et illum doloribus ut. Occaecati ratione veritatis explicabo. Omnis nam omnis sunt placeat tempore accusantium placeat distinctio velit.`,
-  `Eum illo dicta et perspiciatis ut blanditiis eos sequi. Ea veritatis aut et voluptas aut. Laborum eos quia tempore a culpa.`,
-  `Aut quos quae dolores repudiandae similique perferendis perferendis earum laudantium. Facere placeat natus nobis. Eius vitae ullam dolorem.`,
-  `Vero dolorem et voluptatem fugit tempore a quam iure. Fuga consequatur corrupti sunt asperiores vitae. Libero totam repellendus animi debitis illum et sunt officia.`,
-  `Cupiditate illum officiis id molestiae. Numquam non molestiae aliquid et natus sed hic. Alias quia explicabo sed corrupti sint. Natus in et odio qui unde facilis quia. Est sit eius laboriosam aliquid non aperiam quia quo corporis.`,
-  `Et a ab. Optio aspernatur minus tempora amet vitae consectetur inventore cumque. Sed et omnis. Aspernatur a magnam.`,
-  `Ipsum omnis et. Quia ea et autem tempore consequuntur veniam dolorem officiis. Ipsa dicta et ut quidem quia doloremque. Sequi vitae doloremque temporibus. Deserunt incidunt id aperiam itaque natus. Earum sit eaque quas incidunt nihil.`,
-  `Quae consequatur reiciendis. Consequatur non optio. Eaque id placeat. Commodi quo officia aut repudiandae reiciendis tempore voluptatem et. Ut accusamus qui itaque maxime aliquam. Fugit ut animi molestiae porro maiores.`,
-  `Modi hic asperiores ab cumque quam est aut. Voluptas atque quos molestias. Ut excepturi distinctio ipsam aspernatur sit.`,
-  `Sunt totam facilis. Quam commodi voluptatem veniam. Tempora deleniti itaque fugit nihil voluptas.`,
-  `Ipsam aliquam velit nobis repellendus officiis aut deserunt id et. Nihil sunt aut dolores aut. Dolores est ipsa quia et laborum quidem laborum accusamus id. Facilis odit quod hic laudantium saepe omnis nisi in sint. Sed cupiditate possimus id.`,
-  `Magnam non eveniet optio optio ut aliquid atque. Velit libero aspernatur quis laborum consequatur laudantium. Tempora facere optio fugit accusantium ut. Omnis aspernatur reprehenderit autem esse ut ut enim voluptatibus.`,
+  // --- Agent & Phase Descriptions ---
+  `**Segmentation Agent:** Automatically analyzes customer RFM scores and behavioral data to generate dynamic, explainable target segments for personalized campaigns.`,
+  `**Retrieval-Augmented Generation (RAG):** Secures approved product information from the Azure Search Index to ensure messages are accurate, relevant, and fully cited.`,
+  `**AI Message Generator:** Creates multiple hyper-personalized message variants (A/B/n) tailored specifically to the segment's demonstrated needs and campaign goals.`,
+  `**Safety & Compliance Agent:** Proactively evaluates every generated message against brand guidelines and policy rules, blocking or rewriting high-risk content.`,
+  `**Experimentation Agent:** Simulates campaign performance and conversion uplift, providing measurable ROI data before the message is deployed to end-users.`,
+  `**LangGraph Orchestration:** Manages the complex, multi-step flow between agents, ensuring decisions are logged and traceable from goal input to final output.`,
+  `**Explainability Engine:** Generates comprehensive documentation detailing why a specific message variant was chosen for a customer and which rules influenced its final form.`,
+  `**Closed-Loop Optimization:** Performance metrics from deployed campaigns are fed back into the system to continuously refine segmentation and generation strategies.`,
+
+  // --- Feature & Benefit Descriptions ---
+  `Move beyond static segments to real-time decisioning. EchoVoice AI dynamically groups customers based on live intent, maximizing message relevance.`,
+  `Achieve true 1:1 personalization at scale without compromising governance. Every message is vetted by AI guardrails before distribution.`,
+  `Full citation of source content ensures messages are legally sound and accurate. Say goodbye to misquoted product features and compliance risk.`,
+  `Provides a unified view for both marketing teams (uplift) and compliance teams (auditability), bridging the gap between growth and risk management.`,
+  `Leverages Azure OpenAI and Vector Search for low-latency retrieval, ensuring fast, context-aware message generation even for large product catalogs.`,
+  `Proactive policy enforcement means the system catches medical claims, misleading price guarantees, and sensitive targeting attributes automatically.`,
+  `Design your campaign goals, and let the agents intelligently select the right segment, retrieve the best content, and generate the winning variant.`,
+  `The platform is production-ready, featuring modular agent systems, logging hooks, and scalable infrastructure designed for enterprise integration.`,
+
+  // --- Compliance & Safety Focus ---
+  `Every blocked message is logged with the specific policy violation (e.g., Tone Violation, Medical Claim), providing a clear audit trail for regulators.`,
+  `The system guards against 'hallucination' by strictly limiting content generation to information verified and cited from the approved Product Content Store.`,
+  `Supports multi-channel deployment (Email, SMS, In-App, Voice TTS) while maintaining a consistent level of safety and personalization across all endpoints.`,
+  `Focus on high-value customers by prioritizing segments that show the highest predicted conversion uplift based on predictive modeling.`,
+  `Minimize PII (Personally Identifiable Information) exposure through multi-layer detection and protection used during the data ingestion and retrieval phases.`,
+  `Offers customizable policy frameworks, allowing non-technical compliance officers to update and extend the rules without writing code.`,
+
+  // --- Technical & Advanced Features ---
+  `The architecture is built on Python (FastAPI) and React (Next.js), providing a performant, modern, and extendable foundation for your MarTech stack.`,
+  `Utilizes state-of-the-art vector embeddings to maximize the semantic relevance of retrieved content, drastically improving the quality of generated copy.`,
+  `Designed for the retail sector, excelling at complex inventory, pricing, and promotional logic required for accurate customer communication.`,
+  `Seamlessly integrates with existing Customer Data Platforms (CDPs) and inventory APIs via LangChain Tool invocation.`,
 ];
 
 export const packageTypes = ['data', 'time', 'hybrid'];

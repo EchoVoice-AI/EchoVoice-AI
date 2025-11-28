@@ -63,7 +63,7 @@ from config import (
     CONFIG_VECTOR_SEARCH_ENABLED,
     CONFIG_WEB_SOURCE_ENABLED,
 )
-from prepdocs import (
+from services.prepdocs import (
     OpenAIHost,
     setup_embeddings_service,
     setup_file_processors,

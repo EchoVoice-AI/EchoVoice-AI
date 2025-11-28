@@ -289,7 +289,48 @@ export const _bookings = Array.from({ length: 5 }, (_, index) => {
   };
 });
 
-export const _bookingsOverview = Array.from({ length: 3 }, (_, index) => ({
+export const _segmentors = Array.from({ length: 5 }, (_, index) => {
+  const type = ['rule-based', 'ai/llm', 'experimental', 'rule-based', 'rule-based'][index];
+  const seg_name = ['Behavioral Segment', 'RFM Segment', 'Profile Segment', 'Loyalty Segment', 'Experiment'][index];
+
+  const status = [true, true, false, false, true][index];
+  return {
+    id: _mock.uuid(index),
+    name: seg_name,
+    description: _mock.description(index),
+    avatarUrl: _mock.image.avatar(index),
+    coverUrl: _mock.image.travel(index),
+    priority: 1,
+    type,
+    enabled: status,
+    checkIn: _mock.time(index),
+    checkOut: _mock.time(index),
+  };
+});
+
+export const _segmentorReview = Array.from({ length: 5 }, (_, index) => ({
+  id: _mock.id(index),
+  name: _mock.fullName(index),
+  postedAt: _mock.time(index),
+  rating: _mock.number.rating(index),
+  avatarUrl: _mock.image.avatar(index),
+  description: _mock.description(index),
+  tags: ['Great sevice', 'Recommended', 'Best price'],
+}));
+
+export const _segmentorNew = Array.from({ length: 8 }, (_, index) => ({
+  guests: '3-5',
+  id: _mock.id(index),
+  bookedAt: _mock.time(index),
+  duration: '3 days 2 nights',
+  isHot: _mock.boolean(index),
+  name: _mock.fullName(index),
+  price: _mock.number.price(index),
+  avatarUrl: _mock.image.avatar(index),
+  coverUrl: _mock.image.travel(index),
+}));
+
+export const _segmentorsOverview = Array.from({ length: 3 }, (_, index) => ({
   status: ['Pending', 'Canceled', 'Sold'][index],
   quantity: _mock.number.nativeL(index),
   value: _mock.number.percent(index + 5),
@@ -322,15 +363,15 @@ export const _bookingNew = Array.from({ length: 8 }, (_, index) => ({
 
 export const _coursesContinue = Array.from({ length: 4 }, (_, index) => ({
   id: _mock.id(index),
-  title: _mock.courseNames(index),
+  title: _mock.indexContentNames(index),
   coverUrl: _mock.image.course(index),
-  totalLesson: 12,
-  currentLesson: index + 7,
+  totalLesson: 5,
+  currentLesson: 5,
 }));
 
 export const _coursesFeatured = Array.from({ length: 6 }, (_, index) => ({
   id: _mock.id(index),
-  title: _mock.courseNames(index),
+  title: _mock.indexContentNames(index),
   coverUrl: _mock.image.course(index + 6),
   totalDuration: 220,
   totalStudents: _mock.number.nativeM(index),
@@ -339,7 +380,7 @@ export const _coursesFeatured = Array.from({ length: 6 }, (_, index) => ({
 
 export const _coursesReminder = Array.from({ length: 4 }, (_, index) => ({
   id: _mock.id(index),
-  title: _mock.courseNames(index),
+  title: _mock.indexContentNames(index),
   totalLesson: 12,
   reminderAt: today(),
   currentLesson: index + 7,

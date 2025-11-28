@@ -29,7 +29,7 @@ from msgraph.generated.oauth2_permission_grants.oauth2_permission_grants_request
 )
 
 from auth_common import get_application, test_authentication_enabled
-from load_azd_env import load_azd_env
+from services.load_azd_env import load_azd_env
 
 
 async def create_application(graph_client: GraphServiceClient, request_app: Application) -> tuple[str, str]:

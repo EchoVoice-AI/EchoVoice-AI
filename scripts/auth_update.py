@@ -9,7 +9,7 @@ from msgraph.generated.models.spa_application import SpaApplication
 from msgraph.generated.models.web_application import WebApplication
 
 from auth_common import get_application, test_authentication_enabled
-from load_azd_env import load_azd_env
+from services.load_azd_env import load_azd_env
 
 
 async def main():

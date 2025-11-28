@@ -81,7 +81,7 @@ function Item({ item, sx, ...other }: ItemProps) {
         </Link>
 
         <Box component="span" sx={{ color: 'text.secondary', typography: 'caption' }}>
-          Lessons: {item.currentLesson}/{item.totalLesson}
+          Processed: {item.currentLesson}/{item.totalLesson}
         </Box>
 
         <Box

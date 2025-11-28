@@ -53,49 +53,49 @@ export function OverviewAppView() {
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
-          {user?.role === 'admin' && (
-            <AppWidgetSummary
-              title="Total Active Users"
-              percent={2.6}
-              total={3654}
-              chart={{
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [15, 18, 12, 51, 68, 11, 39, 37],
-              }}
-            />)}
-          {user?.role === 'employee' && (
-            <AppWidgetSummary
-              title="Total Active Users"
-              percent={2.6}
-              total={3654}
-              chart={{
-                categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [15, 18, 12, 51, 68, 11, 39, 37],
-              }}
-            />)}
+  {user?.role === 'admin' && (
+    <AppWidgetSummary
+      title="Avg. Conversion Uplift (%)"
+      percent={2.6} // Percentage change from previous period
+      total={9.8} // The average conversion lift achieved (e.g., 9.8%)
+      chart={{
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+        series: [5.1, 7.8, 6.2, 9.1, 8.8, 10.1, 9.9, 10.5], // Conversion uplift trend
+      }}
+    />)}
+  {user?.role === 'employee' && (
+    <AppWidgetSummary
+      title="Avg. Conversion Uplift (%)"
+      percent={2.6}
+      total={9.8}
+      chart={{
+        categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
+        series: [5.1, 7.8, 6.2, 9.1, 8.8, 10.1, 9.9, 10.5],
+      }}
+    />)}
         </Grid>
 
         <Grid size={{ xs: 12, md: 4 }}>
           {user?.role === 'admin' && (
             <AppWidgetSummary
-              title="Total Hotspot users"
-              percent={0.2}
-              total={2448}
+              title="Messages Blocked by Safety Agent"
+              percent={-5.2} // A negative change is good (fewer violations)
+              total={2448} // Total number of messages blocked by Phase 4 agent
               chart={{
                 colors: [theme.palette.info.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [20, 41, 63, 33, 28, 35, 50, 46],
+                series: [320, 290, 260, 310, 350, 280, 240, 190], // Trend of blocked messages
               }}
             />)}
           {user?.role === 'employee' && (
             <AppWidgetSummary
-              title="Total Hotspot users"
-              percent={0.2}
+              title="Messages Blocked by Safety Agent"
+              percent={-5.2}
               total={2448}
               chart={{
                 colors: [theme.palette.info.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [20, 41, 63, 33, 28, 35, 50, 46],
+                series: [320, 290, 260, 310, 350, 280, 240, 190],
               }}
             />)}
 
@@ -104,56 +104,63 @@ export function OverviewAppView() {
         <Grid size={{ xs: 12, md: 4 }}>
           {user?.role === 'admin' && (
             <AppWidgetSummary
-              title="Total PPPoE users"
-              percent={-0.1}
-              total={1206}
+              title="Active Agent Workflows"
+              percent={15.3} // Positive growth in system usage
+              total={1206} // Total active orchestration loops (LangGraph instances)
               chart={{
-                colors: [theme.palette.error.main],
+                colors: [theme.palette.success.main], // Switched to success color for growth
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [18, 19, 31, 8, 16, 37, 12, 33],
+                series: [800, 850, 920, 1050, 1100, 1200, 1250, 1310], // Trend of active workflows
               }}
             />)}
           {user?.role === 'employee' && (
             <AppWidgetSummary
-              title="Total PPPoE users"
-              percent={-0.1}
+              title="Active Agent Workflows"
+              percent={15.3}
               total={1206}
               chart={{
-                colors: [theme.palette.error.main],
+                colors: [theme.palette.success.main],
                 categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug'],
-                series: [18, 19, 31, 8, 16, 37, 12, 33],
+                series: [800, 850, 920, 1050, 1100, 1200, 1250, 1310],
               }}
             />)}
         </Grid>
 
         <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          {user?.role === 'admin' && (<AppCurrentDownload
-            title="Client Distribution"
-            subheader=""
+        {user?.role === 'admin' && (
+          <AppCurrentDownload
+            title="Active Segment Distribution"
+            subheader="Allocation of messages by high-value segment"
             chart={{
               series: [
-                { label: 'Hotspot', value: 2448 },
-                { label: 'PPPoE', value: 1206 },
+                // Repurposed from 'Hotspot' and 'PPPoE' to relevant segments
+                { label: 'High-Value Shopper', value: 2448 },
+                { label: 'Budget-Conscious', value: 1206 },
+                { label: 'Loyalty Program Member', value: 950 },
+                { label: 'Recent Service Interactor', value: 500 },
               ],
             }}
           />)}
-          {user?.role === 'employee' && (
-            <AppCurrentDownload
-              title="Client Distribution"
-              subheader=""
-              chart={{
-                series: [
-                  { label: 'Hotspot', value: 2448 },
-                  { label: 'PPPoE', value: 1206 },
-                ],
-              }}
-            />)}
-        </Grid>
+        {user?.role === 'employee' && (
+          <AppCurrentDownload
+            title="Active Segment Distribution"
+            subheader="Allocation of messages by high-value segment"
+            chart={{
+              series: [
+                { label: 'High-Value Shopper', value: 2448 },
+                { label: 'Budget-Conscious', value: 1206 },
+                { label: 'Loyalty Program Member', value: 950 },
+                { label: 'Recent Service Interactor', value: 500 },
+              ],
+            }}
+          />)}
+      </Grid>
 
-        <Grid size={{ xs: 12, md: 6, lg: 8 }}>
-          {user?.role === 'admin' && (<AppAreaInstalled
-            title="Sessions active monthly"
-            subheader="(+43%) than last year"
+      <Grid size={{ xs: 12, md: 6, lg: 8 }}>
+        {user?.role === 'admin' && (
+          <AppAreaInstalled
+            title="Workflow Compliance Status (Monthly)"
+            subheader="Tracking message approval rates by the Safety Agent"
             chart={{
               categories: [
                 "Jan",
@@ -171,120 +178,122 @@ export function OverviewAppView() {
               ],
               series: [
                 {
-                  name: '2022',
-                  data: [
-                    { name: 'Active', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
-                    { name: 'Inactive', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
-                  ],
-                },
-                {
-                  name: '2023',
-                  data: [
-                    { name: 'Active', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
-                    { name: 'Inactive', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
-                  ],
-                },
-                {
                   name: '2024',
                   data: [
-                    { name: 'Active', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                    { name: 'Inactive', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
+                    { name: 'Approved', data: [92, 95, 213, 421, 94, 95, 196, 95, 93, 94, 95, 96] },
+                    { name: 'Blocked', data: [758, 15, 7, 29, 226, 5, 34, 85, 47, 26, 65, 64] },
+                  ],
+                },
+                {
+                  name: '2025',
+                  data: [
+                    { name: 'Approved', data: [494, 296, 395, 427, 96, 198, 297, 98, 596, 97, 98, 99] },
+                    { name: 'Blocked', data: [86, 34, 35, 23, 124, 92, 13, 2, 34, 63, 22, 1] },
                   ],
                 },
               ],
             }}
           />)}
-          {user?.role === 'employee' && (
-            <AppAreaInstalled
-              title="Sessions active monthly"
-              subheader="(+43%) than last year"
-              chart={{
-                categories: [
-                  'Jan',
-                  'Feb',
-                  'Mar',
-                  'Apr',
-                  'May',
-                  'Jun',
-                  'Jul',
-                  'Aug',
-                  'Sep',
-                  'Oct',
-                  'Nov',
-                  'Dec',
-                ],
-                series: [
-                  {
-                    name: '2022',
-                    data: [
-                      { name: 'Active', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
-                      { name: 'Inactive', data: [12, 10, 18, 22, 20, 12, 8, 21, 20, 14, 15, 16] },
-                    ],
-                  },
-                  {
-                    name: '2023',
-                    data: [
-                      { name: 'Active', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
-                      { name: 'Inactive', data: [6, 18, 14, 9, 20, 6, 22, 19, 8, 22, 8, 17] },
-                    ],
-                  },
-                  {
-                    name: '2024',
-                    data: [
-                      { name: 'Active', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                      { name: 'Inactive', data: [6, 20, 15, 18, 7, 24, 6, 10, 12, 17, 18, 10] },
-                    ],
-                  },
-                ],
-              }}
-            />)}
-
-        </Grid>
-
+        {user?.role === 'employee' && (
+          <AppAreaInstalled
+            title="Workflow Compliance Status (Monthly)"
+            subheader="Tracking message approval rates by the Safety Agent"
+            chart={{
+              categories: [
+                'Jan',
+                'Feb',
+                'Mar',
+                'Apr',
+                'May',
+                'Jun',
+                'Jul',
+                'Aug',
+                'Sep',
+                'Oct',
+                'Nov',
+                'Dec',
+              ],
+              series: [
+                {
+                  name: '2023',
+                  data: [
+                    { name: 'Approved', data: [92, 95, 93, 91, 94, 95, 96, 95, 93, 94, 95, 96] },
+                    { name: 'Blocked', data: [8, 5, 7, 9, 6, 5, 4, 5, 7, 6, 5, 4] },
+                  ],
+                },
+                {
+                  name: '2024',
+                  data: [
+                    { name: 'Approved', data: [94, 96, 95, 97, 96, 98, 97, 98, 96, 97, 98, 99] },
+                    { name: 'Blocked', data: [6, 4, 5, 3, 4, 2, 3, 2, 4, 3, 2, 1] },
+                  ],
+                },
+              ],
+            }}
+          />)}
+      </Grid>
         <Grid size={{ xs: 12, lg: 8 }}>
-          <AppNewInvoice
-            title="Inbox"
-            tableData={_appInvoices}
-            headCells={[
-              { id: 'id', label: 'Message ID' },
-              { id: 'category', label: 'Type' },
-              { id: 'price', label: 'Price' },
-              { id: 'status', label: 'Status' },
-              { id: '' },
-            ]}
+        <AppNewInvoice
+          // Changed title from "Inbox" to reflect a real-time log of agent activity
+          title="Orchestration Log & Safety Audit"
+          // Assuming _appInvoices is replaced with an array of log entries or messages
+          tableData={_appInvoices} 
+          headCells={[
+            // Renamed for context: Message ID -> Message/Task ID
+            { id: 'id', label: 'Task ID' },
+            // Renamed for context: Category -> Agent/Phase
+            { id: 'category', label: 'Agent/Phase' },
+            // Renamed for context: Price -> Compliance Score (or Uplift Score)
+            { id: 'price', label: 'Compliance Score' },
+            // Status is perfect, but context changed (e.g., Blocked, Approved, Rewritten)
+            { id: 'status', label: 'Status' },
+            { id: '' },
+          ]}
+        />
+      </Grid>
+
+      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
+        {user?.role === 'admin' && (
+          // Changed title from "Leave applications" to a relevant agent focus area
+          <AppTopRelated 
+            title="High-Priority Safety Flags" 
+            // Assuming leave_requests is replaced with a list of messages flagged for review
+            list={leave_requests} 
           />
-        </Grid>
+        )}
+        {user?.role === 'employee' && (
+          <AppTopRelated 
+            title="Recent Agent Actions" 
+            list={leave_requests} 
+          />
+        )}
+      </Grid>
 
-        <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-          {user?.role === 'admin' && (<AppTopRelated title="Leave applications" list={leave_requests} />)}
-          {user?.role === 'employee' && (
-            <AppTopRelated title="Related applications" list={leave_requests} />
-          )}
-        </Grid>
 
 
+      <Grid size={{ xs: 12, md: 12, lg: 12 }}>
+        <Box sx={{ gap: 3, display: 'flex', flexDirection: 'row',justifyContent: 'space-around' }}>
+          <AppWidget
+            // Changed title from "Profile Completion" to a core RAG metric
+            title="Product Content Coverage"
+            total={92} // Total percentage of product content indexed
+            icon="solar:archive-bold-duotone"
+            chart={{ series: 92 }} // Use chart to visually represent coverage
+          />
 
-        <Grid size={{ xs: 12, md: 12, lg: 12 }}>
-          <Box sx={{ gap: 3, display: 'flex', flexDirection: 'row' }}>
-            <AppWidget
-              title="Profile Completion"
-              total={48}
-              icon="solar:user-rounded-bold"
-              chart={{ series: 48 }}
-            />
-
-            <AppWidget
-              title="Applications"
-              total={55566}
-              icon="fluent:mail-24-filled"
-              chart={{
-                series: 75,
-                colors: [theme.vars.palette.info.light, theme.vars.palette.info.main],
-              }}
-              sx={{ bgcolor: 'info.dark', [`& .${svgColorClasses.root}`]: { color: 'info.light' } }}
-            />
-          </Box>
-        </Grid>
+          <AppWidget
+            // Changed title from "Applications" to a key performance metric
+            title="Experimentation Simulator Runs"
+            total={556} // Total number of A/B/n simulations or experiments run
+            icon="fluent:rocket-24-filled"
+            chart={{
+              series: 85, // Representative of the total possible number of runs
+              colors: [theme.vars.palette.success.light, theme.vars.palette.success.main],
+            }}
+            sx={{ bgcolor: 'success.dark', [`& .${svgColorClasses.root}`]: { color: 'success.light' } }}
+          />
+        </Box>
+      </Grid>
       </Grid>
     </DashboardContent>
   );

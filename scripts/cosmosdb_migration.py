@@ -32,7 +32,7 @@ import os
 from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import AzureDeveloperCliCredential
 
-from load_azd_env import load_azd_env
+from services.load_azd_env import load_azd_env
 
 
 class CosmosDBMigrator:

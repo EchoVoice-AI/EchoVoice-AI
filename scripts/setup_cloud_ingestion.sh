@@ -7,4 +7,4 @@ fi
 
 . ./scripts/load_python_env.sh
 
-./.venv/bin/python ./app/backend/setup_cloud_ingestion.py
+./.venv/bin/python ./app/backend/services/setup_cloud_ingestion.py

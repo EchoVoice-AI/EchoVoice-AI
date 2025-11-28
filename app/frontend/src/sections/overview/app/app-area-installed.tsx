@@ -33,7 +33,7 @@ type Props = CardProps & {
 export function AppAreaInstalled({ title, subheader, chart, sx, ...other }: Props) {
   const theme = useTheme();
 
-  const [selectedSeries, setSelectedSeries] = useState('2023');
+  const [selectedSeries, setSelectedSeries] = useState('2025');
 
   const chartColors = chart.colors ?? [
     theme.palette.primary.dark,

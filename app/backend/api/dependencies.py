@@ -6,6 +6,26 @@ from fastapi import HTTPException, Request
 
 from config import CONFIG_AUTH_CLIENT, CONFIG_SEARCH_CLIENT
 from core.authentication import AuthError
+from typing import Any
+from fastapi import HTTPException, Request, Depends
+
+from config import CONFIG_ASK_APPROACH, CONFIG_CHAT_APPROACH
+
+
+async def get_ask_approach(request: Request) -> Any:
+    cfg = getattr(request.app.state, "config", {})
+    approach = cfg.get(CONFIG_ASK_APPROACH)
+    if approach is None:
+        raise HTTPException(status_code=503, detail="Ask approach not configured")
+    return approach
+
+
+async def get_chat_approach(request: Request) -> Any:
+    cfg = getattr(request.app.state, "config", {})
+    approach = cfg.get(CONFIG_CHAT_APPROACH)
+    if approach is None:
+        raise HTTPException(status_code=503, detail="Chat approach not configured")
+    return approach
 
 
 async def get_auth_claims(request: Request) -> dict[str, Any]:

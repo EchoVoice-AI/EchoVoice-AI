@@ -11,39 +11,39 @@ import type { NavMainProps } from './main/nav/types';
 export const navData: NavMainProps['data'] = [
   { title: 'Home', path: '/', icon: <Iconify width={22} icon="solar:home-2-bold-duotone" /> },
   {
-    title: 'Configurations',
-    path: paths.components,
+    title: 'About',
+    path: paths.faqs,
     icon: <Iconify width={22} icon="solar:atom-bold-duotone" />,
   },
   {
-    title: 'Pages',
+    title: 'Configuration',
     path: '/pages',
     icon: <Iconify width={22} icon="solar:file-bold-duotone" />,
     children: [
       {
-        subheader: 'Other',
+        subheader: 'Segmentors',
         items: [
-          { title: 'About us', path: paths.about },
-          { title: 'Contact us', path: paths.contact },
-          { title: 'FAQs', path: paths.faqs },
-          { title: 'Pricing', path: paths.pricing },
-          { title: 'Payment', path: paths.payment },
-          { title: 'Maintenance', path: paths.maintenance },
-          { title: 'Coming soon', path: paths.comingSoon },
+          { title: 'Behaviorial', path: paths.about },
+          { title: 'Intent', path: paths.contact },
+          { title: 'RFM', path: paths.faqs },
+          // { title: 'Pricing', path: paths.pricing },
+          // { title: 'Payment', path: paths.payment },
+          // { title: 'Maintenance', path: paths.maintenance },
+          // { title: 'Coming soon', path: paths.comingSoon },
         ],
       },
       {
-        subheader: 'Concepts',
+        subheader: 'Retrievers',
         items: [
-          { title: 'Shop', path: paths.product.root },
-          { title: 'Product', path: paths.product.demo.details },
-          { title: 'Checkout', path: paths.product.checkout },
-          { title: 'Posts', path: paths.post.root },
-          { title: 'Post', path: paths.post.demo.details },
+          { title: 'Search Index', path: paths.product.root },
+          { title: 'Data Sources', path: paths.product.demo.details },
+          { title: 'Settings', path: paths.product.checkout },
+          // { title: 'Posts', path: paths.post.root },
+          // { title: 'Post', path: paths.post.demo.details },
         ],
       },
       {
-        subheader: 'Auth Demo',
+        subheader: 'Generators',
         items: [
           { title: 'Sign in', path: paths.authDemo.split.signIn },
           { title: 'Sign up', path: paths.authDemo.split.signUp },
@@ -58,19 +58,14 @@ export const navData: NavMainProps['data'] = [
         ],
       },
       {
-        subheader: 'Error',
+        subheader: 'Safety Filters and policies',
         items: [
-          { title: 'Page 403', path: paths.page403 },
-          { title: 'Page 404', path: paths.page404 },
-          { title: 'Page 500', path: paths.page500 },
+          { title: 'Policies', path: paths.page403 },
+          { title: 'Rules', path: paths.page404 },
+          // { title: 'Page 500', path: paths.page500 },
         ],
       },
       { subheader: 'Dashboard', items: [{ title: 'Dashboard', path: CONFIG.auth.redirectPath }] },
     ],
-  },
-  {
-    title: 'Docs',
-    icon: <Iconify width={22} icon="solar:notebook-bold-duotone" />,
-    path: paths.docs,
   },
 ];

@@ -10,7 +10,7 @@ from azure.core.credentials import AzureKeyCredential
 from httpx import Request, Response
 from openai.types.create_embedding_response import Usage
 
-import prepdocs
+import services.prepdocs as prepdocs
 from prepdocslib.embeddings import ImageEmbeddings, OpenAIEmbeddings
 
 from .mocks import (

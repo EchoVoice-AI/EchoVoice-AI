@@ -26,11 +26,25 @@ valid_data_access_control_format = {
 @pytest.fixture
 def mock_open(monkeypatch):
     class MockOpenedFile:
-        def __enter__(self, *args, **kwargs):
+        def __init__(self):
+            self._buffer = []
+
+        def write(self, data):
+            # mimic file.write
+            self._buffer.append(data)
+
+        def read(self):
+            return "".join(self._buffer)
+
+        def close(self):
+            # no-op close
             pass
 
-        def __exit__(self, *args, **kwargs):
+        def __enter__(self, *args, **kwargs):
             return self
+
+        def __exit__(self, *args, **kwargs):
+            return False
 
     def mock_open(*args, **kwargs):
         return MockOpenedFile()

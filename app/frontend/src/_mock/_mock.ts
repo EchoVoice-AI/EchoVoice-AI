@@ -33,6 +33,7 @@ import {
   _descriptions,
   _phoneNumbers,
   _countryNames,
+  _indexedContent,
 } from './assets';
 
 // ----------------------------------------------------------------------
@@ -42,11 +43,13 @@ const subscribers = [100, 200, 300, 400, 500];
 
 export const _mock = {
   id: (index: number) => _id[index],
+  uuid: (index: number) => `uuid-${_id[index]}`,
   time: (index: number) => fSub({ days: index, hours: index }),
   boolean: (index: number) => _booleans[index],
   role: (index: number) => _roles[index],
   // Text
   courseNames: (index: number) => _courseNames[index],
+  indexContentNames: (index: number) => _indexedContent[index],
   fileNames: (index: number) => _fileNames[index],
   eventNames: (index: number) => _eventNames[index],
   taskNames: (index: number) => _taskNames[index],
