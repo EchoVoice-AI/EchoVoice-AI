@@ -2,7 +2,7 @@ import { cache } from 'react';
 import { createInstance } from 'i18next';
 import { cookies as getCookies } from 'next/headers';
 import resourcesToBackend from 'i18next-resources-to-backend';
-import { initReactI18next } from 'node_modules/react-i18next/initReactI18next';
+import { initReactI18next } from 'react-i18next/initReactI18next';
 
 import { defaultNS, cookieName, i18nOptions, fallbackLng } from './locales-config';
 

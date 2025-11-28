@@ -232,7 +232,7 @@ export function Texts({ sx, ...other }: BoxProps & MotionProps) {
           animate={{ x: ['0%', '-50%'] }}
           transition={{ duration: 64, ease: 'linear', repeat: Infinity }}
         >
-          Minimal Design System Minimal Design System
+          EchoVoice EchoVoice
         </m.text>
       </Box>
     </Box>
