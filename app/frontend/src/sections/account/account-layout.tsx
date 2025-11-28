@@ -22,27 +22,27 @@ const NAV_ITEMS = [
   {
     label: 'General',
     icon: <Iconify width={24} icon="solar:user-id-bold" />,
-    href: paths.dashboard.user.account,
+    href: paths.dashboard.retrievers.settings,
   },
   {
-    label: 'Billing',
-    icon: <Iconify width={24} icon="solar:bill-list-bold" />,
-    href: `${paths.dashboard.user.account}/billing`,
+    label: 'Index Configuration',
+    icon: <Iconify width={24} icon="solar:settings-bold-duotone" />,
+    href: `${paths.dashboard.retrievers.settings}/configuration`,
   },
   {
-    label: 'Notifications',
-    icon: <Iconify width={24} icon="solar:bell-bing-bold" />,
-    href: `${paths.dashboard.user.account}/notifications`,
+    label: 'Indexing Status',
+    icon: <Iconify width={24} icon="solar:refresh-square-bold-duotone" />,
+    href: `${paths.dashboard.retrievers.settings}/indexing-status`,
   },
   {
-    label: 'Social links',
-    icon: <Iconify width={24} icon="solar:share-bold" />,
-    href: `${paths.dashboard.user.account}/socials`,
+    label: 'Retrieval Logs',
+    icon: <Iconify width={24} icon="solar:document-text-bold-duotone" />,
+    href: `${paths.dashboard.retrievers.settings}/retrieval-logs`,
   },
   {
-    label: 'Security',
+    label: 'API Keys & Access',
     icon: <Iconify width={24} icon="ic:round-vpn-key" />,
-    href: `${paths.dashboard.user.account}/change-password`,
+    href: `${paths.dashboard.retrievers.settings}/api-access`,
   },
 ];
 
@@ -54,11 +54,11 @@ export function AccountLayout({ children, ...other }: DashboardContentProps) {
   return (
     <DashboardContent {...other}>
       <CustomBreadcrumbs
-        heading="Account"
+        heading="Retrievers Settings"
         links={[
           { name: 'Dashboard', href: paths.dashboard.root },
-          { name: 'User', href: paths.dashboard.user.root },
-          { name: 'Account' },
+          { name: 'Retrievers', href: paths.dashboard.retrievers.root },
+          { name: 'Settings' },
         ]}
         sx={{ mb: 3 }}
       />

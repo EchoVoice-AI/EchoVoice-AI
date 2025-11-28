@@ -199,13 +199,7 @@ export const paths = {
     },
     retrievers: {
       root: `${ROOTS.DASHBOARD}/retrievers`,
-      new: `${ROOTS.DASHBOARD}/retrievers/new`,
-      list: `${ROOTS.DASHBOARD}/retrievers/list`,
-      cards: `${ROOTS.DASHBOARD}/retrievers/cards`,
-      profile: `${ROOTS.DASHBOARD}/retrievers/profile`,
-      account: `${ROOTS.DASHBOARD}/retrievers/account`,
-      edit: (id: string) => `${ROOTS.DASHBOARD}/retrievers/${id}/edit`,
-      demo: { edit: `${ROOTS.DASHBOARD}/retrievers/${MOCK_ID}/edit` },
+      settings: `${ROOTS.DASHBOARD}/retrievers/settings`,
     },
     safety: {
       root: `${ROOTS.DASHBOARD}/safety`,
