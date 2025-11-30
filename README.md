@@ -31,6 +31,7 @@ This repository provides a **prototype scaffold** for local development, includi
     - [Note](#note)
 
 ![Chat screen](docs/images/chatscreen.png)
+![Chat screen](docs/images/chatscreen2.png)
 
 [📺 Watch a video overview of the app.](https://youtu.be/3acB0OWmLvM)
 
