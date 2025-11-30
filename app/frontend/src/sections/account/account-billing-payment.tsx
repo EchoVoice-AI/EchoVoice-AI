@@ -14,9 +14,6 @@ import DialogActions from '@mui/material/DialogActions';
 
 import { Iconify } from 'src/components/iconify';
 
-import { PaymentCardItem } from '../payment/payment-card-item';
-import { PaymentNewCardForm } from '../payment/payment-new-card-form';
-
 // ----------------------------------------------------------------------
 
 type Props = CardProps & {
@@ -52,9 +49,9 @@ export function AccountBillingPayment({ cards, sx, ...other }: Props) {
             gridTemplateColumns: { xs: 'repeat(1, 1fr)', md: 'repeat(2, 1fr)' },
           }}
         >
-          {cards.map((card) => (
+          {/* {cards.map((card) => (
             <PaymentCardItem key={card.id} card={card} />
-          ))}
+          ))} */}
         </Box>
       </Card>
 
@@ -62,7 +59,7 @@ export function AccountBillingPayment({ cards, sx, ...other }: Props) {
         <DialogTitle> Add new card </DialogTitle>
 
         <DialogContent sx={{ overflow: 'unset' }}>
-          <PaymentNewCardForm />
+          {/* <PaymentNewCardForm /> */}
         </DialogContent>
 
         <DialogActions>

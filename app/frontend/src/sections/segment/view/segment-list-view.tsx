@@ -28,6 +28,8 @@ export function SegmentListView() {
     id: segment.id,
     name: segment.name,
     priority: segment.priority,
+    type: (segment as any).type ?? '',
+    description: (segment as any).description ?? '',
     role: (segment.metadata || {}).role || '',
     metadata: segment.metadata || {},
     avatarUrl: '',

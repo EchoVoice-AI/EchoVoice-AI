@@ -1,6 +1,5 @@
 import type { BoxProps } from '@mui/material/Box';
 import type { CardProps } from '@mui/material/Card';
-import type { ILeaveItem2 } from 'src/types/product';
 
 import Box from '@mui/material/Box';
 import Card from '@mui/material/Card';
@@ -24,7 +23,7 @@ import { Scrollbar } from 'src/components/scrollbar';
 type Props = CardProps & {
   title?: string;
   subheader?: string;
-  list: ILeaveItem2[];
+  list: [];
 };
 
 export function AppTopRelated({ title, subheader, list, sx, ...other }: Props) {
@@ -43,8 +42,8 @@ export function AppTopRelated({ title, subheader, list, sx, ...other }: Props) {
             flexDirection: 'column',
           }}
         >
-          {list.map((item) => (
-            <Item key={item.id} item={item} />
+          {list.map((item,index) => (
+            <Item key={index} item={item} />
           ))}
         </Box>
       </Scrollbar>
@@ -74,11 +73,11 @@ function Item({ item, sx, ...other }: ItemProps) {
           }}
         >
           <Typography variant="subtitle2" noWrap>
-            {item.employee}
+            James Smith
           </Typography>
 
-          <Label color={item.status === 'Pending' ? 'default' : 'success'} sx={{ height: 20 }}>
-            {item.status}
+          <Label color="success" sx={{ height: 20 }}>
+            Pending
           </Label>
         </Box>
 
@@ -102,15 +101,15 @@ function Item({ item, sx, ...other }: ItemProps) {
         >
           <Box sx={{ gap: 0.5, display: 'flex', alignItems: 'center' }}>
             <Iconify width={16} icon="solar:download-bold" sx={{ color: 'text.disabled' }} />
-            {item.leave_days}
+            {30}
           </Box>
 
           <Box sx={{ gap: 0.5, display: 'flex', alignItems: 'center' }}>
-            {item.start_date}
+            {fDate('2024-01-01T00:00:00Z')}
           </Box>
           <Box sx={{ gap: 0.5, display: 'flex', alignItems: 'center' }}>
             <Iconify width={16} icon="heroicons:server-solid" sx={{ color: 'text.disabled' }} />
-            {fDate(item.start_date)}
+            {fDate('2024-01-15T00:00:00Z')}
           </Box>
 
           <Box sx={{ gap: 0.5, display: 'flex', alignItems: 'center' }}>
@@ -119,11 +118,11 @@ function Item({ item, sx, ...other }: ItemProps) {
               size="small"
               precision={0.5}
               name="reviews"
-              value={item.start_date}
+              value={4.5}
               max={1}
               sx={{ [` .${svgIconClasses.root}`]: { width: 16, height: 16 } }}
             />
-            {fShortenNumber(item.totalReviews)}
+            {fShortenNumber(0)}
           </Box>
         </Stack>
       </div>

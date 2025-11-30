@@ -18,7 +18,6 @@ import { AppWidget } from '../app-widget';
 import { AppWelcome } from '../app-welcome';
 import { AppFeatured } from '../app-featured';
 import { AppNewInvoice } from '../app-new-invoice';
-import { AppTopRelated } from '../app-top-related';
 import { AppAreaInstalled } from '../app-area-installed';
 import { AppWidgetSummary } from '../app-widget-summary';
 import { AppCurrentDownload } from '../app-current-download';
@@ -27,9 +26,6 @@ import { AppCurrentDownload } from '../app-current-download';
 
 export function OverviewAppView() {
   const { user } = useMockedUser();
-
-  const { leave_requests } = useDashStore();
-
   const theme = useTheme();
 
   return (
@@ -252,22 +248,6 @@ export function OverviewAppView() {
         />
       </Grid>
 
-      <Grid size={{ xs: 12, md: 6, lg: 4 }}>
-        {user?.role === 'admin' && (
-          // Changed title from "Leave applications" to a relevant agent focus area
-          <AppTopRelated 
-            title="High-Priority Safety Flags" 
-            // Assuming leave_requests is replaced with a list of messages flagged for review
-            list={leave_requests} 
-          />
-        )}
-        {user?.role === 'employee' && (
-          <AppTopRelated 
-            title="Recent Agent Actions" 
-            list={leave_requests} 
-          />
-        )}
-      </Grid>
 
 
 
