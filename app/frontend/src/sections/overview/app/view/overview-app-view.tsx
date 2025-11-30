@@ -6,7 +6,6 @@ import Button from '@mui/material/Button';
 import { useTheme } from '@mui/material/styles';
 
 import { _appFeatured, _appInvoices } from 'src/_mock';
-import { useDashStore } from 'src/store/dashboardSttore';
 import { DashboardContent } from 'src/layouts/dashboard';
 import { SeoIllustration } from 'src/assets/illustrations';
 
