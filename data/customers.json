@@ -1,0 +1,14 @@
+[
+  {
+  "id": "cust_002",
+  "name": "Bob",
+  "email": "bob@example.com",
+  "last_event": "payment_plans",
+  "properties": {
+    "form_started": "yes",
+    "scheduled": "no",
+    "attended": "no"
+  }
+}
+
+]

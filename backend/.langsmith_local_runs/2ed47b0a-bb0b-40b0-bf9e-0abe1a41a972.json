@@ -1,0 +1,24 @@
+{
+  "id": "2ed47b0a-bb0b-40b0-bf9e-0abe1a41a972",
+  "name": "safety_gate.safety_check_and_filter",
+  "metadata": {
+    "variant_count": 1
+  },
+  "start_time": 1763870955.643672,
+  "events": [
+    {
+      "time": 1763870955.643865,
+      "name": "safety_result",
+      "payload": {
+        "safe": 1,
+        "blocked": 0
+      }
+    }
+  ],
+  "end_time": 1763870955.64398,
+  "status": "success",
+  "outputs": {
+    "safe": 1,
+    "blocked": 0
+  }
+}
