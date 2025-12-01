@@ -15,6 +15,11 @@ This repository provides a **prototype scaffold** for local development, includi
   - [Table of Contents](#table-of-contents)
   - [Features](#features)
     - [Architecture Diagram](#architecture-diagram)
+  - [🚀 The End-to-End LangGraph Architecture](#-the-end-to-end-langgraph-architecture)
+    - [Phase 1: Segmentation (Decision \& Context)](#phase-1-segmentation-decision--context)
+    - [Phase 2: Content Retrieval (Grounded Facts)](#phase-2-content-retrieval-grounded-facts)
+    - [Phase 3: Generation and Compliance (Safety Barrier)](#phase-3-generation-and-compliance-safety-barrier)
+    - [Phase 4: Experimentation and Feedback (Closing the Loop)](#phase-4-experimentation-and-feedback-closing-the-loop)
   - [Azure account requirements](#azure-account-requirements)
     - [Cost estimation](#cost-estimation)
   - [Getting Started](#getting-started)
@@ -26,18 +31,15 @@ This repository provides a **prototype scaffold** for local development, includi
   - [Using the app](#using-the-app)
   - [Clean up](#clean-up)
   - [Guidance](#guidance)
-    - [Resources](#resources)
-    - [Getting help](#getting-help)
-    - [Note](#note)
 
 ![Chat screen](docs/images/chatscreen.png)
 ![Chat screen](docs/images/chatscreen2.png)
 
-[📺 Watch a video overview of the app.](https://youtu.be/3acB0OWmLvM)
+[📺 Watch a video overview of the app.](https://youtu.be/g0BRpb4jgIY)
 
-This sample demonstrates a few approaches for creating ChatGPT-like experiences over your own data using the Retrieval-Augmented Generation (RAG) pattern — EchoVoice's text-target retrieval. It uses Azure OpenAI Service to access a GPT model (gpt-4.1-mini), and Azure AI Search for data indexing and retrieval.
+This repository demonstrates EchoVoice — a compliance-first, multi-agent personalization orchestrator. It illustrates how retrieval-augmented generation (RAG) workflows, model orchestration, and audit trails can be combined to produce safe, on‑brand customer messaging.
 
-The repo includes sample data so it's ready to try end to end. In this sample application we use a fictitious company called Zava, and the experience allows its employees to ask questions about the benefits, internal policies, as well as job descriptions and roles.
+The prototype uses Azure OpenAI Service (example model: `gpt-4.1-mini`) together with Azure AI Search for indexing and retrieval. The repo includes sample data and mocked services so you can run the prototype locally and inspect retrieval sources, model outputs, and the associated audit metadata.
 
 ## Features
 
@@ -53,6 +55,59 @@ The repo includes sample data so it's ready to try end to end. In this sample ap
 ### Architecture Diagram
 
 ![EchoVoice Architecture](docs/images/appcomponents.png)
+
+---
+
+## 🚀 The End-to-End LangGraph Architecture
+
+That's the complete, four-phase LangGraph architecture for your **AI Marketing Personalization Engine**! You've successfully mapped the conceptual design into four distinct, interconnected graphs that handle conditional logic, RAG, compliance, and feedback.
+
+Here is a summary of the complete end-to-end workflow, illustrating how the four phases (represented by your four uploaded diagrams) link together to form a closed-loop system:
+
+---
+
+### Phase 1: Segmentation (Decision & Context)
+
+- **Goal:** Determine the single, most relevant segment for the current campaign goal.
+- **Starting Point:** The graph begins at the **Goal Router** node, which receives the campaign objective.
+- **Key Logic:** **Conditional Routing** based on the goal (e.g., **RFM** for churn, **Intent** for real-time). Only one specialized agent runs.
+- **Output:** The **Priority & Output** node provides the final, definitive `prioritized_segment` and its `segment_description` (the explainable reason).
+
+---
+
+### Phase 2: Content Retrieval (Grounded Facts)
+
+- **Goal:** Retrieve accurate, citable product information relevant to the segment's needs.
+- **Key Logic:** **Corrective RAG Loop**.
+  - The **Contextual Query Generator** translates the segment description into search terms.
+  - The **Relevance Grader** checks the retrieved documents.
+  - **Conditional Loop:** If documents are irrelevant, the flow routes to **Self-Correction** (Rewrite Query) and loops back for a retry.
+- **Output:** The **Citation Formatter** provides the final, clean `content_context` and a list of `citation_sources`.
+
+---
+
+### Phase 3: Generation and Compliance (Safety Barrier)
+
+- **Goal:** Create personalized message variants and ensure 100% adherence to brand safety policy.
+- **Key Logic:** **Mandatory Safety Loop**.
+  - The **AI Message Generator** creates A/B/n variants using the segment and the citable content.
+  - The **Safety & Compliance Agent** checks the variants against the policy rule engine.
+  - **Conditional Loop:** If the message is **NOT compliant**, the flow routes to the **Automated Rewrite Node** and **loops back** to the Compliance Agent for a re-check.
+- **Output:** An approved list of safe and personalized message variants.
+
+---
+
+### Phase 4: Experimentation and Feedback (Closing the Loop)
+
+- **Goal:** Simulate performance to select the winning message and feed performance data back for continuous improvement.
+- **Key Logic:** **Simulation and Dual Exit**.
+  - The **A/B/n Experiment Simulator** predicts the CTR and Conversion Lift for each variant.
+  - The **Winning Variant Selector** chooses the best-performing message.
+- **Output & Exit:** The **Feedback Processor** splits the workflow into two paths:
+  1. **Deployment Queue:** Sends the winning, approved message to the external system for live use.
+  2. **Feedback Loop:** Sends the structured performance data and segment details back to Phase 1 or Phase 3 for model retraining and optimization.
+
+This closed-loop system represents a powerful, enterprise-grade AI solution and maps the LangGraph diagrams into an operational pipeline for safe, auditable personalization.
 
 ## Azure account requirements
 
@@ -254,32 +309,3 @@ You can find extensive documentation in the [docs](docs/README.md) folder:
 - [Monitoring with Application Insights](docs/monitoring.md)
 - [Productionizing](docs/productionizing.md)
 - [Alternative retrieval chat samples](docs/other_samples.md)
-
-### Resources
-
-- [📖 Docs: Get started using the chat with your data sample](https://learn.microsoft.com/azure/developer/python/get-started-app-chat-template?toc=%2Fazure%2Fdeveloper%2Fai%2Ftoc.json&bc=%2Fazure%2Fdeveloper%2Fai%2Fbreadcrumb%2Ftoc.json&tabs=github-codespaces)
-- [📖 Blog: Revolutionize your Enterprise Data with ChatGPT: Next-gen Apps w/ Azure OpenAI and AI Search](https://techcommunity.microsoft.com/blog/azure-ai-services-blog/revolutionize-your-enterprise-data-with-chatgpt-next-gen-apps-w-azure-openai-and/3762087)
-- [📖 Docs: Azure AI Search](https://learn.microsoft.com/azure/search/search-what-is-azure-search)
-- [📖 Docs: Azure OpenAI Service](https://learn.microsoft.com/azure/cognitive-services/openai/overview)
-- [📖 Docs: Comparing Azure OpenAI and OpenAI](https://learn.microsoft.com/azure/cognitive-services/openai/overview#comparing-azure-openai-and-openai/)
-- [📖 Blog: Access Control in Generative AI applications with Azure AI Search](https://techcommunity.microsoft.com/blog/azure-ai-services-blog/access-control-in-generative-ai-applications-with-azure-ai-search/3956408)
-- [📺 Talk: Quickly build and deploy OpenAI apps on Azure, infused with your own data](https://www.youtube.com/watch?v=j8i-OM5kwiY)
-- [📺 Video: RAG Deep Dive Series](https://techcommunity.microsoft.com/blog/azuredevcommunityblog/rag-deep-dive-watch-all-the-recordings/4383171)
-
-### Getting help
-
-This is a sample built to demonstrate the capabilities of modern Generative AI apps and how they can be built in Azure.
-For help with deploying this sample, please post in [GitHub Issues](/issues). If you're a Microsoft employee, you can also post in [our Teams channel](https://aka.ms/azai-python-help).
-
-This repository is supported by the maintainers, *not* by Microsoft Support,
-so please use the support mechanisms described above, and we will do our best to help you out.
-
-For general questions about developing AI solutions on Azure,
-join the Azure AI Foundry Developer Community:
-
-[![Azure AI Foundry Discord](https://img.shields.io/badge/Discord-Azure_AI_Foundry_Community_Discord-blue?style=for-the-badge&logo=discord&color=5865f2&logoColor=fff)](https://aka.ms/foundry/discord)
-[![Azure AI Foundry Developer Forum](https://img.shields.io/badge/GitHub-Azure_AI_Foundry_Developer_Forum-blue?style=for-the-badge&logo=github&color=000000&logoColor=fff)](https://aka.ms/foundry/forum)
-
-### Note
-
->Note: The PDF documents used in this demo contain information generated using a language model (Azure OpenAI Service). The information contained in these documents is only for demonstration purposes and does not reflect the opinions or beliefs of Microsoft. Microsoft makes no representations or warranties of any kind, express or implied, about the completeness, accuracy, reliability, suitability or availability with respect to the information contained in this document. All rights reserved to Microsoft.

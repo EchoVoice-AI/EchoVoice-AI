@@ -4,6 +4,16 @@ import mimetypes
 import os
 import time
 from typing import Awaitable, Callable
+import sys
+from pathlib import Path
+
+# Ensure the repository root is on sys.path so local packages (e.g. PersonalizeAI)
+# are importable regardless of the current working directory when the backend
+# starts. `startup.py` is located at `app/backend/api/startup.py`, so parents[3]
+# reaches the repository root.
+REPO_ROOT = Path(__file__).resolve().parents[3]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from azure.cosmos.aio import CosmosClient
 from azure.identity.aio import (

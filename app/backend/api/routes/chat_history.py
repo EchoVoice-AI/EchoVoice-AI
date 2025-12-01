@@ -5,8 +5,10 @@ from fastapi.responses import JSONResponse, Response
 
 from config import (
     CONFIG_CHAT_HISTORY_COSMOS_ENABLED,
+    CONFIG_COSMOS_HISTORY_CLIENT,
     CONFIG_COSMOS_HISTORY_CONTAINER,
     CONFIG_COSMOS_HISTORY_VERSION,
+    CONFIG_CREDENTIAL,
 )
 from ..dependencies import get_auth_claims
 

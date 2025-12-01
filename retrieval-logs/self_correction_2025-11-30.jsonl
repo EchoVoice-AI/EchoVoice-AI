@@ -1,0 +1,14 @@
+{"ts": "2025-11-30T22:53:03.841516Z", "method": "llm", "prev_query": "old query", "new_query": "concise rewritten query", "model": null}
+{"ts": "2025-11-30T22:53:04.488820Z", "method": "heuristic", "prev_query": "old query", "new_query": "old query product facts compliance citations", "model": null}
+{"ts": "2025-11-30T22:59:45.579574Z", "method": "llm", "prev_query": "old query", "new_query": "concise rewritten query", "model": null}
+{"ts": "2025-11-30T22:59:46.524287Z", "method": "heuristic", "prev_query": "old query", "new_query": "old query product facts compliance citations", "model": null}
+{"ts": "2025-11-30T23:07:28.011982Z", "method": "llm", "prev_query": "old query", "new_query": "concise rewritten query", "model": null}
+{"ts": "2025-11-30T23:07:28.790441Z", "method": "heuristic", "prev_query": "old query", "new_query": "old query product facts compliance citations", "model": null}
+{"ts": "2025-11-30T23:08:21.546797Z", "method": "llm", "prev_query": "old query", "new_query": "concise rewritten query", "model": null}
+{"ts": "2025-11-30T23:08:22.580937Z", "method": "heuristic", "prev_query": "old query", "new_query": "old query product facts compliance citations", "model": null}
+{"ts": "2025-11-30T23:09:05.044991Z", "method": "llm", "prev_query": "old query", "new_query": "concise rewritten query", "model": null}
+{"ts": "2025-11-30T23:09:06.116654Z", "method": "heuristic", "prev_query": "old query", "new_query": "old query product facts compliance citations", "model": null}
+{"ts": "2025-11-30T23:10:21.231446+00:00", "method": "llm", "prev_query": "old query", "new_query": "concise rewritten query", "model": null}
+{"ts": "2025-11-30T23:10:21.261837+00:00", "method": "heuristic", "prev_query": "old query", "new_query": "old query product facts compliance citations", "model": null}
+{"ts": "2025-11-30T23:14:15.036366+00:00", "method": "llm", "prev_query": "old query", "new_query": "concise rewritten query", "model": null}
+{"ts": "2025-11-30T23:14:15.064362+00:00", "method": "heuristic", "prev_query": "old query", "new_query": "old query product facts compliance citations", "model": null}
