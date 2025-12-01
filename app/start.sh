@@ -50,7 +50,7 @@ cd ../backend
 
 port=8000
 host=localhost
-../../.venv/bin/python -m uvicorn api.main:app --port "$port" --host "$host" --reload
+../../.venv/bin/python -m uvicorn main:app --port "$port" --host "$host" --reload
 out=$?
 if [ $out -ne 0 ]; then
     echo "Failed to start backend"
