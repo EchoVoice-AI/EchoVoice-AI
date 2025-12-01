@@ -15,6 +15,7 @@ Nodes included:
   variants and returns updated `message_variants`.
 
 Notes:
+
 - These modules contain deterministic example logic for local testing and
   unit tests. Replace the deterministic parts with LLM calls and stricter
   policy evaluation in production.
