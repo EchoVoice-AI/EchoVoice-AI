@@ -1,0 +1,71 @@
+import { paths } from 'src/routes/paths';
+
+import { CONFIG } from 'src/global-config';
+
+import { Iconify } from 'src/components/iconify';
+
+import type { NavMainProps } from './main/nav/types';
+
+// ----------------------------------------------------------------------
+
+export const navData: NavMainProps['data'] = [
+  { title: 'Home', path: '/', icon: <Iconify width={22} icon="solar:home-2-bold-duotone" /> },
+  {
+    title: 'About',
+    path: paths.faqs,
+    icon: <Iconify width={22} icon="solar:atom-bold-duotone" />,
+  },
+  {
+    title: 'Configuration',
+    path: '/pages',
+    icon: <Iconify width={22} icon="solar:file-bold-duotone" />,
+    children: [
+      {
+        subheader: 'Segmentors',
+        items: [
+          { title: 'Behaviorial', path: paths.about },
+          { title: 'Intent', path: paths.contact },
+          { title: 'RFM', path: paths.faqs },
+          // { title: 'Pricing', path: paths.pricing },
+          // { title: 'Payment', path: paths.payment },
+          // { title: 'Maintenance', path: paths.maintenance },
+          // { title: 'Coming soon', path: paths.comingSoon },
+        ],
+      },
+      {
+        subheader: 'Retrievers',
+        items: [
+          { title: 'Search Index', path: paths.product.root },
+          { title: 'Data Sources', path: paths.product.demo.details },
+          { title: 'Settings', path: paths.product.checkout },
+          // { title: 'Posts', path: paths.post.root },
+          // { title: 'Post', path: paths.post.demo.details },
+        ],
+      },
+      {
+        subheader: 'Generators',
+        items: [
+          { title: 'Sign in', path: paths.authDemo.split.signIn },
+          { title: 'Sign up', path: paths.authDemo.split.signUp },
+          { title: 'Reset password', path: paths.authDemo.split.resetPassword },
+          { title: 'Update password', path: paths.authDemo.split.updatePassword },
+          { title: 'Verify', path: paths.authDemo.split.verify },
+          { title: 'Sign in (centered)', path: paths.authDemo.centered.signIn },
+          { title: 'Sign up (centered)', path: paths.authDemo.centered.signUp },
+          { title: 'Reset password (centered)', path: paths.authDemo.centered.resetPassword },
+          { title: 'Update password (centered)', path: paths.authDemo.centered.updatePassword },
+          { title: 'Verify (centered)', path: paths.authDemo.centered.verify },
+        ],
+      },
+      {
+        subheader: 'Safety Filters and policies',
+        items: [
+          { title: 'Policies', path: paths.page403 },
+          { title: 'Rules', path: paths.page404 },
+          // { title: 'Page 500', path: paths.page500 },
+        ],
+      },
+      { subheader: 'Dashboard', items: [{ title: 'Dashboard', path: CONFIG.auth.redirectPath }] },
+    ],
+  },
+];
