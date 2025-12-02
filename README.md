@@ -2,6 +2,7 @@
 # 🚀 **EchoVoice: Customer Personalization Orchestrator**
 
 **Project Title:** `EchoVoice: Customer Personalization Orchestrator`
+
 **Challenge Solved:** *Compliant, on-brand personalization and A/B/n experimentation in a regulated domain.*
 
 EchoVoice is a **multi-agent AI personalization platform** designed for regulated industries. It delivers safe, on-brand, traceable customer messaging through a coordinated set of specialized agents working together inside a transparent and auditable orchestration pipeline.
@@ -71,6 +72,9 @@ Each phase is implemented as an independent LangGraph, all connected in a master
 [📺 Watch a video overview of the app.](https://youtu.be/g0BRpb4jgIY)
 
 [📺 Slides .](https://gamma.app/docs/EchoVoice-AI-Multi-Agent-Personalization-Orchestrator-xot0e7u2x8cwzmx)
+
+[📺Goal Driven Segmentation(https://slidesgpt.com/presentation/oluXpOrd0wwdBKIhoxvu)]
+ 
 This repository demonstrates EchoVoice — a compliance-first, multi-agent personalization orchestrator. It illustrates how retrieval-augmented generation (RAG) workflows, model orchestration, and audit trails can be combined to produce safe, on‑brand customer messaging.
 
 The prototype uses Azure OpenAI Service (example model: `gpt-4.1-mini`) together with Azure AI Search for indexing and retrieval. The repo includes sample data and mocked services so you can run the prototype locally and inspect retrieval sources, model outputs, and the associated audit metadata.
@@ -102,6 +106,8 @@ Here is a summary of the complete end-to-end workflow, illustrating how the four
 ---
 
 ### Phase 1: Segmentation (Decision & Context)
+
+ [📺Goal Driven Segmentation(https://slidesgpt.com/presentation/oluXpOrd0wwdBKIhoxvu)]
 
 - **Goal:** Determine the single, most relevant segment for the current campaign goal.
 - **Starting Point:** The graph begins at the **Goal Router** node, which receives the campaign objective.
