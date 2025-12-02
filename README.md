@@ -73,7 +73,7 @@ Each phase is implemented as an independent LangGraph, all connected in a master
 
 [📺 Slides .](https://gamma.app/docs/EchoVoice-AI-Multi-Agent-Personalization-Orchestrator-xot0e7u2x8cwzmx)
 
-[📺Goal Driven Segmentation(https://slidesgpt.com/presentation/oluXpOrd0wwdBKIhoxvu)]
+[📺Goal Driven Segmentation](https://slidesgpt.com/presentation/oluXpOrd0wwdBKIhoxvu)
  
 This repository demonstrates EchoVoice — a compliance-first, multi-agent personalization orchestrator. It illustrates how retrieval-augmented generation (RAG) workflows, model orchestration, and audit trails can be combined to produce safe, on‑brand customer messaging.
 
