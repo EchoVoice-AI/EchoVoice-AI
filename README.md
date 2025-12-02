@@ -1,3 +1,4 @@
+
 # 🚀 **EchoVoice: Customer Personalization Orchestrator**
 
 **Project Title:** `EchoVoice: Customer Personalization Orchestrator`
@@ -5,10 +6,42 @@
 
 EchoVoice is a **multi-agent AI personalization platform** designed for regulated industries. It delivers safe, on-brand, traceable customer messaging through a coordinated set of specialized agents working together inside a transparent and auditable orchestration pipeline.
 
-This repository provides a **prototype scaffold** for local development, including an orchestrator, agent suite, mock retrieval (text-target) data, and a frontend stub for auditability.
+This repository provides a **prototype scaffold** for local development — including a LangGraph-based orchestrator, agent suite, mock retrieval (text-target) data, and a frontend stub for auditability.
+
+EchoVoice is built to demonstrate how modern enterprises can combine **retrieval, guardrails, multi-agent orchestration, audit trails, and compliance automation** to deliver personalization safely at scale.
+
+---
+## ⭐ Why EchoVoice?
+
+From the Gamma deck:
+
+> **“AI personalization is powerful — but unsafe when uncontrolled.”**
+> AI models hallucinate, violate regulation, drift off-brand, or generate misleading claims.
+> This prototype shows how to **control** AI-powered personalization through enforcement architecture.
+
+EchoVoice solves four major industry problems:
+
+1. **Regulatory risk** — customers must never receive false, unapproved, non-compliant messaging.
+2. **Brand drift & inconsistency** — large models generate tone-unsafe or off-brand copy.
+3. **Lack of traceability** — compliance teams require citations, evidence, logs, and overrides.
+4. **Experimentation bottlenecks** — brands need fast A/B/n testing but with safety guarantees.
+
+EchoVoice addresses all four using a structured, multi-agent LangGraph design.
 
 ---
 
+## 🧠 How EchoVoice Works (High-Level)
+
+EchoVoice implements a **4-phase closed-loop orchestration pipeline**, with agents collaborating to generate, inspect, correct, and approve personalized messages:
+
+1. **Segmentation →** Pick best segment for the user’s goal.
+2. **Retrieval →** Pull grounded facts from product knowledge.
+3. **Generation + Compliance →** Produce message variants and enforce safety.
+4. **Experimentation + Feedback →** Score variants, pick winner, close the loop.
+
+Each phase is implemented as an independent LangGraph, all connected in a master orchestrator.
+
+---
 ## Table of Contents
 
 - [🚀 **EchoVoice: Customer Personalization Orchestrator**](#-echovoice-customer-personalization-orchestrator)
@@ -37,23 +70,24 @@ This repository provides a **prototype scaffold** for local development, includi
 
 [📺 Watch a video overview of the app.](https://youtu.be/g0BRpb4jgIY)
 
-[📺 Slides .]([https://youtu.be/g0BRpb4jgIY](https://gamma.app/docs/EchoVoice-AI-Multi-Agent-Personalization-Orchestrator-xot0e7u2x8cwzmx))
+[📺 Slides .](https://gamma.app/docs/EchoVoice-AI-Multi-Agent-Personalization-Orchestrator-xot0e7u2x8cwzmx)
 This repository demonstrates EchoVoice — a compliance-first, multi-agent personalization orchestrator. It illustrates how retrieval-augmented generation (RAG) workflows, model orchestration, and audit trails can be combined to produce safe, on‑brand customer messaging.
 
 The prototype uses Azure OpenAI Service (example model: `gpt-4.1-mini`) together with Azure AI Search for indexing and retrieval. The repo includes sample data and mocked services so you can run the prototype locally and inspect retrieval sources, model outputs, and the associated audit metadata.
 
 ## Features
 
-- Chat (multi-turn) and Q&A (single turn) interfaces
-- Renders citations and thought process for each answer
-- Includes settings directly in the UI to tweak the behavior and experiment with options
-- Integrates Azure AI Search for indexing and retrieval of documents, with support for [many document formats](/docs/data_ingestion.md#supported-document-formats) as well as [cloud data ingestion](/docs/data_ingestion.md#cloud-data-ingestion)
-- Optional usage of [multimodal models](/docs/multimodal.md) to reason over image-heavy documents
-- Optional addition of [speech input/output](/docs/deploy_features.md#enabling-speech-inputoutput) for accessibility
-- Optional automation of [user login and data access](/docs/login_and_acl.md) via Microsoft Entra
-- Performance tracing and monitoring with Application Insights
+* Chat (multi-turn) and Q&A (single turn) interfaces
+* Inline citations and model-thought metadata rendering
+* Built-in UI controls for experimental parameters
+* Azure AI Search indexing and retrieval
+* Multimodal support (via optional features)
+* Optional speech input/output
+* Optional Microsoft Entra authentication
+* Application Insights tracing
+* End-to-end demonstrator of a compliance-first personalization system
 
-### Architecture Diagram
+## Architecture Diagram
 
 ![EchoVoice Architecture](docs/images/appcomponents.png)
 
