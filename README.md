@@ -37,6 +37,7 @@ This repository provides a **prototype scaffold** for local development, includi
 
 [📺 Watch a video overview of the app.](https://youtu.be/g0BRpb4jgIY)
 
+[📺 Slides .]([https://youtu.be/g0BRpb4jgIY](https://gamma.app/docs/EchoVoice-AI-Multi-Agent-Personalization-Orchestrator-xot0e7u2x8cwzmx))
 This repository demonstrates EchoVoice — a compliance-first, multi-agent personalization orchestrator. It illustrates how retrieval-augmented generation (RAG) workflows, model orchestration, and audit trails can be combined to produce safe, on‑brand customer messaging.
 
 The prototype uses Azure OpenAI Service (example model: `gpt-4.1-mini`) together with Azure AI Search for indexing and retrieval. The repo includes sample data and mocked services so you can run the prototype locally and inspect retrieval sources, model outputs, and the associated audit metadata.
