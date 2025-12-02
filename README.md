@@ -14,7 +14,6 @@ EchoVoice is built to demonstrate how modern enterprises can combine **retrieval
 ---
 ## ⭐ Why EchoVoice?
 
-From the Gamma deck:
 
 > **“AI personalization is powerful — but unsafe when uncontrolled.”**
 > AI models hallucinate, violate regulation, drift off-brand, or generate misleading claims.
